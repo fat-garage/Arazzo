@@ -13,6 +13,8 @@ The starter kit for developers to build their own application on top of [Dataver
 - Read [Developer Documentation](https://gitbook.dataverse-os.com/) to integrate [Runtime-SDK](https://github.com/dataverse-os/runtime-connector)
 - Downaload [Data Wallet](https://github.com/dataverse-os/create-dataverse-app/releases/tag/DataWallet-0.5.33) to run OS Kernel and expose system calls to devs (Chrome version will be ready soon)
 
+Note: There are some bugs in Metamask SDKs (10.28.2). Please switch to Polygon network manully before you try data wallet.
+
 # Getting Started
 
 ## Environment
