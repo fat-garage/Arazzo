@@ -280,20 +280,128 @@ export function useContent(appName: string) {
     };
   };
 
+  const updateContentFromPrivateToPublic = async ({
+    did,
+    model,
+    contentId,
+  }: {
+    did: string;
+    model: Model;
+    contentId: string;
+  }) => {
+    let encrypted = {} as any;
+    const content = contentRecord[contentId]?.content;
+    if (content && Object.keys(content).length > 0) {
+      Object.keys(content).forEach((key) => {
+        encrypted[key] = false;
+      });
+    }
+    const res = await runtimeConnector.updateStreams({
+      streamsRecord: {
+        [contentId]: {
+          streamContent: {
+            ...(!model.isPublicDomain &&
+              content && {
+                encrypted: JSON.stringify(encrypted),
+              }),
+          },
+          fileType: FileType.Public,
+        },
+      },
+      syncImmediately: true,
+    });
+
+    if (!res?.successRecord?.[contentId]) {
+      throw {
+        failureRecord: res?.failureRecord,
+        failureReason: res?.failureReason,
+      };
+    }
+
+    return {
+      contentId,
+      content: await reloadContentRecord({
+        did,
+        modelName: model.name,
+        contentId,
+      }),
+    };
+  };
+
+  const updateContentFromPublicToPrivate = async ({
+    did,
+    model,
+    contentId,
+    encrypted,
+  }: {
+    did: string;
+    model: Model;
+    contentId: string;
+    encrypted: object;
+  }) => {
+    const content = contentRecord[contentId]?.content;
+    const res = await runtimeConnector.updateStreams({
+      streamsRecord: {
+        [contentId]: {
+          streamContent: {
+            ...(!model.isPublicDomain &&
+              content && {
+                encrypted: JSON.stringify(encrypted),
+              }),
+          },
+          fileType: FileType.Private,
+        },
+      },
+
+      syncImmediately: true,
+    });
+
+    if (!res?.successRecord?.[contentId]) {
+      throw {
+        failureRecord: res?.failureRecord,
+        failureReason: res?.failureReason,
+      };
+    }
+
+    return {
+      contentId,
+      content: await reloadContentRecord({
+        did,
+        modelName: model.name,
+        contentId,
+      }),
+    };
+  };
+
   const updateContent = async ({
     did,
     model,
     contentId,
     content,
+    encrypted,
   }: {
     did: string;
     model: Model;
     contentId: string;
     content: object;
+    encrypted?: object;
   }) => {
+    const fileType = contentRecord[contentId]?.fileType;
+
     const res = await runtimeConnector.updateStreams({
       streamsRecord: {
-        [contentId]: { streamContent: content },
+        [contentId]: {
+          streamContent: {
+            ...content,
+            ...(!model.isPublicDomain &&
+              content &&
+              encrypted &&
+              (fileType === FileType.Private ||
+                fileType === FileType.Datatoken) && {
+                encrypted: JSON.stringify(encrypted),
+              }),
+          },
+        },
       },
       syncImmediately: true,
     });
@@ -442,9 +550,11 @@ export function useContent(appName: string) {
     createPublicContent,
     createPrivateContent,
     createDatatokenContent,
-    updateContent,
     monetizeContent,
     unlockContent,
+    updateContent,
+    updateContentFromPrivateToPublic,
+    updateContentFromPublicToPrivate,
     editProfileContent,
   };
 }

@@ -31,8 +31,10 @@ function App() {
     createPrivateContent,
     createDatatokenContent,
     monetizeContent,
-    updateContent,
     unlockContent,
+    updateContentFromPrivateToPublic,
+    updateContentFromPublicToPrivate,
+    updateContent,
   } = useContent(app.createDapp.name);
 
   const { loadContent: loadProfileContent, editProfileContent } = useContent(
@@ -168,17 +170,55 @@ function App() {
     console.log(res);
   };
 
+  const updatePostFromPrivateToPublic = async () => {
+    if (!currentContentId) {
+      return;
+    }
+    const res = await updateContentFromPrivateToPublic({
+      did,
+      model: postModel,
+      contentId: currentContentId,
+    });
+    console.log(res);
+  };
+
+  const updatePostFromPublicToPrivate = async () => {
+    if (!currentContentId) {
+      return;
+    }
+    const res = await updateContentFromPublicToPrivate({
+      did,
+      model: postModel,
+      contentId: currentContentId,
+      encrypted: {
+        text: true,
+        images: true,
+        videos: false,
+      },
+    });
+    console.log(res);
+  };
+
   const updatePost = async () => {
     if (!currentContentId) {
       return;
     }
     const content = postContentRecord[currentContentId];
-    content.content.text = "update my post -- " + new Date().toISOString();
+
     const res = await updateContent({
       did,
       model: postModel,
       contentId: currentContentId,
-      content: content.content,
+      content: {
+        text: "update my post -- " + new Date().toISOString(),
+        images: [
+          "https://bafkreidhjbco3nh4uc7wwt5c7auirotd76ch6hlzpps7bwdvgckflp7zmi.ipfs.dweb.link",
+        ],
+      },
+      ...((content.fileType === FileType.Private ||
+        content.fileType === FileType.Datatoken) && {
+        encrypted: { text: true, images: true, videos: false },
+      }),
     });
     console.log(res);
   };
@@ -238,6 +278,12 @@ function App() {
       <button onClick={createDatatokenPost}>createDatatokenPost</button>
       <button onClick={monetizePost}>monetizePost</button>
       <button onClick={unlockPost}>unlockPost</button>
+      <button onClick={updatePostFromPublicToPrivate}>
+        updatePostFromPublicToPrivate
+      </button>
+      <button onClick={updatePostFromPrivateToPublic}>
+        updatePostFromPrivateToPublic
+      </button>
       <button onClick={updatePost}>updatePost</button>
       <button onClick={loadPosts}>loadPosts</button>
       <hr />
