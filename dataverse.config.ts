@@ -2,13 +2,13 @@ export const config = {
   slug: "",
   name: "",
   logo: "",
-  website: "",
+  website: "",  // you can use localhost for testing
   defaultFolderName: "Untitled",
   description:
     "",
   models: [
     {
-      isPublicDomain: false,
+      isPublicDomain: false,      // default
       schemaName: "post.graphql",
     },
     {
@@ -16,5 +16,5 @@ export const config = {
       schemaName: "profile.graphql",
     },
   ],
-  ceramicUrl: null, // leave null here using dataverse ceramic node "https://dataverseceramicdaemon.com"
+  ceramicUrl: null, // leave null to deploy ComposeDB on our Ceramic node "https://dataverseceramicdaemon.com"
 };
