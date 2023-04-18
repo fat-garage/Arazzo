@@ -1,6 +1,6 @@
 export const config = {
   slug: "",
-  name: "",
+  name: "", // app name should NOT contain "-"
   logo: "",
   website: "",  // you can use localhost for testing
   defaultFolderName: "Untitled",
