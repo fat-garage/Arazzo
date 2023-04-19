@@ -64,7 +64,7 @@ The `schemaName` links to the corresponding `models/_.graphql` file, defining yo
 You can also select which Ceramic endpoint your dApp is connecting to, to store data models and actual user data. If you are running a production-ready dApp, you are suggested to run your own Ceramic node. Finally you can publish your dApp: 
 
 ```bash
-pnpm create
+pnpm create-dataverse-app
 ```
 This will deploy models to ceramic node you specify, and register data resources to DappTable. You can find resourceIDs in `output/app.json`, including your specific logic as well as file system. 
 
