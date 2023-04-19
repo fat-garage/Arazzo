@@ -32,14 +32,25 @@ const getFileSystemModels = async (slug: string) => {
     const res: any = await client.request(query, { slug: slug });
     // console.log("getDefaultModels Models: ", res.getFileSystemModels);
     return res.getFileSystemModels;
-  } catch (error) {
-    console.log(error);
+  } catch (error: any) {
+    console.log(error?.response?.errors?.[0] ?? error);
   }
 };
 
 export const createDapp = async () => {
   const models = readModels();
-  const params = config as CreateDappProps
+  const params = config as CreateDappProps;
+
+  if (!params.slug) {
+    console.log("The slug cannot be empty.");
+    return;
+  }
+
+  if (!params.name) {
+    console.log("The name cannot be empty.");
+    return;
+  }
+
   const fileSystemModels = await getFileSystemModels(params.slug);
 
   const schemas = Object.values(models);
@@ -119,9 +130,10 @@ export const createDapp = async () => {
   try {
     const res: any = await client.request(query, { ...variables });
     writeToOutput(res);
+    console.log("Create successfully, now you can excute 'pnpm dev' to run react demo.");
     return res;
   } catch (error: any) {
-    console.log(error?.response?.errors?.[0]);
+    console.log(error?.response?.errors?.[0] ?? error);
   }
 };
 
