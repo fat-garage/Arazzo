@@ -116,6 +116,7 @@ export const createDapp = async () => {
           name
           stream_id
           isPublicDomain
+          encryptable
         }
         website
         name

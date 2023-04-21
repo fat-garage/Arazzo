@@ -9,6 +9,7 @@ export const config = {
     {
       isPublicDomain: false, // default
       schemaName: "post.graphql",
+      encryptable: ["text", "images", "videos"], // strings within the schema and within the array represent fields that may be encrypted, while fields within the schema but not within the array represent fields that will definitely not be encrypted
     },
     {
       isPublicDomain: true,
