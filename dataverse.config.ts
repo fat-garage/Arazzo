@@ -1,14 +1,13 @@
 export const config = {
-  slug: "",
+  slug: "", // need to match this regular: `^[a-zA-Z][a-zA-Z0-9_]*$`
   name: "", // app name should NOT contain "-"
   logo: "",
-  website: "",  // you can use localhost for testing
+  website: "", // you can use localhost:(port) for testing
   defaultFolderName: "Untitled",
-  description:
-    "",
+  description: "",
   models: [
     {
-      isPublicDomain: false,      // default
+      isPublicDomain: false, // default
       schemaName: "post.graphql",
     },
     {
