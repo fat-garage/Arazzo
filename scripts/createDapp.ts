@@ -61,6 +61,7 @@ export const createDapp = async () => {
     Models: schemas.concat(fileSystemModels),
   };
 
+
   params.models.forEach((model) => {
     model.schema = models[model.schemaName];
   });
@@ -99,6 +100,7 @@ export const createDapp = async () => {
       $models: [Model!]!
       $originMsg: String!
       $signedMsg: String!
+      $ceramicUrl: String
     ) {
       createDapp(
         slug: $slug
@@ -110,6 +112,7 @@ export const createDapp = async () => {
         models: $models
         originMsg: $originMsg
         signedMsg: $signedMsg
+        ceramicUrl: $ceramicUrl
       ) {
         id
         streamIDs {
@@ -124,6 +127,7 @@ export const createDapp = async () => {
         logo
         description
         defaultFolderName
+        ceramic
       }
     }
   `;
@@ -131,7 +135,9 @@ export const createDapp = async () => {
   try {
     const res: any = await client.request(query, { ...variables });
     writeToOutput(res);
-    console.log("Create successfully, now you can excute 'pnpm dev' to run react demo.");
+    console.log(
+      "Create successfully, now you can run 'pnpm dev' to run react demo."
+    );
     return res;
   } catch (error: any) {
     console.log(error?.response?.errors?.[0] ?? error);

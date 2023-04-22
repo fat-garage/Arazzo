@@ -13,7 +13,7 @@ The starter kit for developers to build their own application on top of [Dataver
 - Read [Developer Documentation](https://gitbook.dataverse-os.com/) to integrate [Runtime-SDK](https://github.com/dataverse-os/runtime-connector)
 - Download [Data Wallet](https://github.com/dataverse-os/create-dataverse-app/releases/tag/DataWallet-0.5.33) to run OS Kernel and expose system calls to devs (Chrome version will be ready soon)
 
-Note: Ensure your Metamask version is 10.28.3 before you try data wallet.
+Note: Ensure your Metamask version is 10.28.3 or newer before you try data wallet.
 
 # Getting Started
 
@@ -26,6 +26,18 @@ git clone https://github.com/dataverse-os/create-dataverse-app
 cd create-dataverse-app
 pnpm install
 ```
+
+## Run demo
+  
+  ```bash
+  pnpm dev
+  ```
+you can see the demo app running at http://localhost:5173.
+<p align="center">
+<a href=" " target="_blank">
+<img src="https://i.imgur.com/xaLxrHh.png" width="300" alt="Dataverse logo">
+</a >
+</p >
 
 ## Publish Your App
 
@@ -61,7 +73,9 @@ models: [
 
 The `schemaName` links to the corresponding `models/_.graphql` file, defining your [ComposeDB](https://composedb.js.org/docs/0.4.x/guides/data-modeling/schemas) models & schemas. By default, you need to set `isPublicDomain=false` to ensure cross-app data security. If you set `isPublicDomain=true`, another dApp can compose this data model, indexing public data from your databases. 
 
-You can also select which Ceramic endpoint your dApp is connecting to, to store data models and actual user data. If you are running a production-ready dApp, you are suggested to run your own Ceramic node. Finally you can publish your dApp: 
+You can also select which Ceramic endpoint your dApp is connecting to, to store data models and actual user data. If you are running a production-ready dApp, you are suggested to run your own Ceramic node. You can deploy your own ceramic node using our tools [dapp-backend](https://github.com/dataverse-os/dapp-backend). Note that if your want to use your own ceramic, you need to ensure the url is accessible.
+
+Finally you can publish your dApp: 
 
 ```bash
 pnpm create-dataverse-app

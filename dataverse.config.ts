@@ -16,5 +16,5 @@ export const config = {
       schemaName: "profile.graphql",
     },
   ],
-  ceramicUrl: null, // leave null to deploy ComposeDB on our Ceramic node "https://dataverseceramicdaemon.com"
+  ceramicUrl: "http://16.163.147.63:8080", // leave null to deploy ComposeDB on our Ceramic node "https://dataverseceramicdaemon.com"
 };
