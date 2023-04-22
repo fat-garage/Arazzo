@@ -72,7 +72,7 @@ function App() {
         appVersion: postVersion,
         text: "hello",
         images: [
-          "https://bafkreib76wz6wewtkfmp5rhm3ep6tf4xjixvzzyh64nbyge5yhjno24yl4.ipfs.dweb.link",
+          "https://bafkreib76wz6wewtkfmp5rhm3ep6tf4xjixvzzyh64nbyge5yhjno24yl4.ipfs.w3s.link",
         ],
         videos: [],
         createdAt: date,
@@ -93,7 +93,7 @@ function App() {
         appVersion: postVersion,
         text: "hello",
         images: [
-          "https://bafkreib76wz6wewtkfmp5rhm3ep6tf4xjixvzzyh64nbyge5yhjno24yl4.ipfs.dweb.link",
+          "https://bafkreib76wz6wewtkfmp5rhm3ep6tf4xjixvzzyh64nbyge5yhjno24yl4.ipfs.w3s.link",
         ],
         videos: [],
         createdAt: date,
@@ -118,7 +118,7 @@ function App() {
         appVersion: postVersion,
         text: "metaverse",
         images: [
-          "https://bafkreidhjbco3nh4uc7wwt5c7auirotd76ch6hlzpps7bwdvgckflp7zmi.ipfs.dweb.link/",
+          "https://bafkreidhjbco3nh4uc7wwt5c7auirotd76ch6hlzpps7bwdvgckflp7zmi.ipfs.w3s.link/",
         ],
         videos: [],
         createdAt: date,
@@ -212,7 +212,7 @@ function App() {
       content: {
         text: "update my post -- " + new Date().toISOString(),
         images: [
-          "https://bafkreidhjbco3nh4uc7wwt5c7auirotd76ch6hlzpps7bwdvgckflp7zmi.ipfs.dweb.link",
+          "https://bafkreidhjbco3nh4uc7wwt5c7auirotd76ch6hlzpps7bwdvgckflp7zmi.ipfs.w3s.link",
         ],
       },
       ...((content.fileType === FileType.Private ||
