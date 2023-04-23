@@ -5,6 +5,7 @@ import app from "../output/app.json";
 import { useContent } from "./hooks/useContent";
 import { useIdentity } from "./hooks/useIdentity";
 import { Model } from "./types";
+import ReactJson from "react-json-view";
 
 function App() {
   const postVersion = "0.0.1";
@@ -21,6 +22,16 @@ function App() {
 
   // Indicates a certain content to be operated on currently
   const [currentContentId, setCurrentContentId] = useState<string>();
+  const [publicPost, setPublicPost] = useState<MirrorFile>();
+  const [privatePost, setPrivatePost] = useState<MirrorFile>();
+  const [datatokenPost, setDatatokenPost] = useState<MirrorFile>();
+  const [monetizedPost, setMonetizedPost] = useState<MirrorFile>();
+  const [unlockedPost, setUnlockedPost] = useState<MirrorFile>();
+  const [encryptedPost, setEncryptedPost] = useState<MirrorFile>();
+  const [decryptedPost, setDecryptedPost] = useState<MirrorFile>();
+  const [updatedPost, setUpdatedPost] = useState<MirrorFile>();
+  const [posts, setPosts] = useState<MirrorFile[]>(); // All posts
+  const [profile, setProfile] = useState<MirrorFile>();
 
   const { did, connectIdentity } = useIdentity();
 
@@ -81,6 +92,7 @@ function App() {
     });
 
     setCurrentContentId(res.contentId);
+    setPublicPost(res.content);
     console.log(res);
   };
 
@@ -106,6 +118,7 @@ function App() {
       },
     });
     setCurrentContentId(res.contentId);
+    setPrivatePost(res.content);
     console.log(res);
   };
 
@@ -124,7 +137,7 @@ function App() {
         createdAt: date,
         updatedAt: date,
       },
-      lensNickName: "jackieth", //Only supports lower case characters, numbers, must be minimum of 5 length and maximum of 26 length
+      lensNickName: "luketheskywalker1", //Only supports lower case characters, numbers, must be minimum of 5 length and maximum of 26 length
       currency: Currency.WMATIC,
       amount: 0.0001,
       collectLimit: 1000,
@@ -135,6 +148,7 @@ function App() {
       },
     });
     setCurrentContentId(res.contentId);
+    setDatatokenPost(res.content);
     console.log(res);
   };
 
@@ -157,6 +171,7 @@ function App() {
       },
     });
     console.log(res);
+    setMonetizedPost(res.content);
   };
 
   const unlockPost = async () => {
@@ -168,6 +183,7 @@ function App() {
       contentId: currentContentId,
     });
     console.log(res);
+    setUnlockedPost(res.content);
   };
 
   const updatePostFromPrivateToPublic = async () => {
@@ -180,6 +196,7 @@ function App() {
       contentId: currentContentId,
     });
     console.log(res);
+    setDecryptedPost(res.content);
   };
 
   const updatePostFromPublicToPrivate = async () => {
@@ -197,6 +214,7 @@ function App() {
       },
     });
     console.log(res);
+    setEncryptedPost(res.content);
   };
 
   const updatePost = async () => {
@@ -221,6 +239,7 @@ function App() {
       }),
     });
     console.log(res);
+    setUpdatedPost(res.content);
   };
 
   const loadPosts = async () => {
@@ -229,6 +248,7 @@ function App() {
       modelName: postModel.name,
     });
     console.log(postRecord);
+    setPosts(Object.values(postRecord));
     // Object.entries(postRecord).find(([contentId, content]) => {
     //   if (
     //     content.fileType === FileType.Datatoken ||
@@ -248,6 +268,7 @@ function App() {
       modelName: profileModel.name,
     });
     console.log(res);
+    setProfile(Object.values(res)[0]);
   };
 
   const editProfile = async () => {
@@ -264,6 +285,7 @@ function App() {
       },
     });
     console.log(res);
+    setProfile(res.content);
   };
 
   /*** Profile ***/
@@ -274,21 +296,74 @@ function App() {
       <div className="blackText">{did}</div>
       <hr />
       <button onClick={createPublicPost}>createPublicPost</button>
+      {publicPost && (
+        <div className="json-view">
+          <ReactJson src={publicPost} collapsed={true} />
+        </div>
+      )}
       <button onClick={createPrivatePost}>createPrivatePost</button>
+      {privatePost && (
+        <div className="json-view">
+          <ReactJson src={privatePost} collapsed={true} />
+        </div>
+      )}
       <button onClick={createDatatokenPost}>createDatatokenPost</button>
+      {datatokenPost && (
+        <div className="json-view">
+          <ReactJson src={datatokenPost} collapsed={true} />
+        </div>
+      )}
+      <div className="red">
+        You need a testnet lens profile to monetize data.
+      </div>
       <button onClick={monetizePost}>monetizePost</button>
+      {monetizedPost && (
+        <div className="json-view">
+          <ReactJson src={monetizedPost} collapsed={true} />
+        </div>
+      )}
       <button onClick={unlockPost}>unlockPost</button>
+      {unlockedPost && (
+        <div className="json-view">
+          <ReactJson src={unlockedPost} collapsed={true} />
+        </div>
+      )}
       <button onClick={updatePostFromPublicToPrivate}>
         updatePostFromPublicToPrivate
       </button>
+      {encryptedPost && (
+        <div className="json-view">
+          <ReactJson src={encryptedPost} collapsed={true} />
+        </div>
+      )}
       <button onClick={updatePostFromPrivateToPublic}>
         updatePostFromPrivateToPublic
       </button>
+      {decryptedPost && (
+        <div className="json-view">
+          <ReactJson src={decryptedPost} collapsed={true} />
+        </div>
+      )}
       <button onClick={updatePost}>updatePost</button>
+      {updatedPost && (
+        <div className="json-view">
+          <ReactJson src={updatedPost} collapsed={true} />
+        </div>
+      )}
       <button onClick={loadPosts}>loadPosts</button>
+      {posts && (
+        <div className="json-view">
+          <ReactJson src={posts} collapsed={true} />
+        </div>
+      )}
       <hr />
       <button onClick={loadProfile}>loadProfile</button>
       <button onClick={editProfile}>editProfile</button>
+      {profile && (
+        <div className="json-view">
+          <ReactJson src={profile} collapsed={true} />
+        </div>
+      )}
       <br />
     </div>
   );

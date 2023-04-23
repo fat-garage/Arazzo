@@ -13,6 +13,6 @@ const runtimeConnector = new RuntimeConnector(Extension);
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <Context.Provider value={{ runtimeConnector }}>
-    <App></App>
+    <App />
   </Context.Provider>
 );

@@ -42,10 +42,23 @@
 
 button {
   display: block;
-  margin: 0 auto 10px;
+  margin: 10px auto;
 }
 
 .blackText {
   color: black;
   font-family: Poppins;
+  max-width: 800px;
+  overflow: auto;
+}
+
+.red {
+  color: red;
+  font-size: 14px;
+  font-family: Poppins;
+}
+
+.json-view {
+  font-size: 12px;
+  text-align: start;
 }
