@@ -4,6 +4,7 @@ import JSToYaml from "convert-yaml";
 import { ethers } from "ethers";
 import { readModels, writeToOutput } from "./tool";
 import { CreateDappProps } from "./types";
+import chalk from "chalk";
 
 export const DATAVERSE_ENDPOINT =
   "https://gateway.beta.dataverse.art/v1/dapp-table";
@@ -60,7 +61,6 @@ export const createDapp = async () => {
     Ceramic: params.ceramicUrl,
     Models: schemas.concat(fileSystemModels),
   };
-
 
   params.models.forEach((model) => {
     model.schema = models[model.schemaName];
@@ -136,7 +136,9 @@ export const createDapp = async () => {
     const res: any = await client.request(query, { ...variables });
     writeToOutput(res);
     console.log(
-      "Create successfully, now you can run 'pnpm dev' to run react demo."
+      chalk.greenBright(
+        "Create successfully, now you can run 'pnpm dev' to run react demo."
+      )
     );
     return res;
   } catch (error: any) {
