@@ -9,6 +9,7 @@ import Message from "./components/message/Message";
 import classnames from "classnames";
 import { DEFAULT_POSTS } from "./utils/contants";
 import storage from "./utils/storage";
+import { useIdentity } from "./hooks/useIdentity";
 
 function getPosts() {
   return storage.getItem("POSTS") || DEFAULT_POSTS;
@@ -21,6 +22,21 @@ function App() {
   const [loading, setLoading] = useState(false);
   const editorRef = useRef<EditorHandle>(null);
   const [mode, setMode] = useState(Mode.View);
+  const { connectIdentity } = useIdentity();
+  const [did, setDid] = useState(null);
+
+  useEffect(() => {
+    const storeDID = storage.getItem("DID");
+    if (!storeDID) {
+      return;
+    }
+
+    setDid(storeDID);
+
+    setTimeout(() => {
+      connect();
+    }, 10);
+  }, []);
 
   useEffect(() => {
     setMode(selectedPost ? Mode.View : Mode.Edit);
@@ -84,6 +100,12 @@ function App() {
     setSelectedPost(post);
   };
 
+  const connect = async () => {
+    const did = await connectIdentity();
+    setDid(did);
+    storage.setItem("DID", did);
+  };
+
   return (
     <Spin spinning={loading}>
       <div className="app-container">
@@ -128,28 +150,36 @@ function App() {
 
         <div className="app-content">
           <div className="app-content-header">
-            {mode === Mode.Edit ? (
-              <Tooltip title="View">
-                <Button
-                  icon={<EyeOutlined />}
-                  type="text"
-                  onClick={() => setMode(Mode.View)}
-                />
-              </Tooltip>
-            ) : (
-              <Tooltip title="Edit">
-                <Button
-                  icon={<EditOutlined />}
-                  type="text"
-                  onClick={() => setMode(Mode.Edit)}
-                />
-              </Tooltip>
-            )}
+            <div className="header-left">{did && did.slice(0, 10) + "..." + did.slice(did.length - 6)}</div>
+            <div className="header-right">
+              {mode === Mode.Edit ? (
+                <Tooltip title="View">
+                  <Button
+                    icon={<EyeOutlined />}
+                    type="text"
+                    onClick={() => setMode(Mode.View)}
+                  />
+                </Tooltip>
+              ) : (
+                <Tooltip title="Edit">
+                  <Button
+                    icon={<EditOutlined />}
+                    type="text"
+                    onClick={() => setMode(Mode.Edit)}
+                  />
+                </Tooltip>
+              )}
 
-            <Button type="text" onClick={publishPost}>
-              Publish
-            </Button>
-            {/* <Button type="text">Get Started</Button> */}
+              {did ? (
+                <Button type="text" onClick={publishPost}>
+                  Publish
+                </Button>
+              ) : (
+                <Button type="text" onClick={connect}>
+                  Get Started
+                </Button>
+              )}
+            </div>
           </div>
           <Editor selectedPost={selectedPost} ref={editorRef} mode={mode} />
         </div>

@@ -24,7 +24,7 @@ const Editor: ForwardRefRenderFunction<EditorHandle, Props> = (
   { selectedPost, mode }: Props,
   forwardedRef
 ) => {
-  const [charCount, setCharCount] = useState(0);
+  const [charCount, setCharCount] = useState(selectedPost?.plainText.length);
   const [updatedAt, setUpdatedAt] = useState(
     dayjs().format("YYYY-MM-DD HH:mm:ss")
   );
@@ -54,10 +54,10 @@ const Editor: ForwardRefRenderFunction<EditorHandle, Props> = (
     ],
     content: selectedPost?.content,
     onUpdate: () => {
-      console.log(editor?.getHTML())
       setCharCount(editor?.getCharacterCount());
       setUpdatedAt(dayjs().format("YYYY-MM-DD HH:mm:ss"));
     },
+    editable: false,
   });
 
   const handleChangeTitle = (e) => {
@@ -68,6 +68,7 @@ const Editor: ForwardRefRenderFunction<EditorHandle, Props> = (
     if (selectedPost && editor) {
       setTitle(selectedPost.title);
       editor.commands.setContent(selectedPost.content);
+      setCharCount(editor.getCharacterCount());
     } else if (!selectedPost && editor) {
       setTitle("");
       editor.commands.setContent("");
@@ -101,7 +102,7 @@ const Editor: ForwardRefRenderFunction<EditorHandle, Props> = (
         </div>
         <div className="bar-item">
           <span className="label">createdAt:</span>
-          <span className="value">{updatedAt}</span>
+          <span className="value">{selectedPost.createdAt}</span>
         </div>
         <div className="bar-item">
           <span className="label">updatedAt:</span>
