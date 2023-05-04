@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import logo from "./assets/images/logo.png";
 import Editor from "./components/editor/Editor";
-import { Button, Tooltip, Spin, Modal } from "antd";
+import { Button, Tooltip, Spin } from "antd";
 import { PlusOutlined, EyeOutlined, EditOutlined } from "@ant-design/icons";
 import { Post, EditorHandle, Mode } from "./types";
 import dayjs from "dayjs";
@@ -10,28 +10,47 @@ import classnames from "classnames";
 import { DEFAULT_POSTS } from "./utils/contants";
 import storage from "./utils/storage";
 import { useIdentity } from "./hooks/useIdentity";
+import { useContent } from "./hooks/useContent";
+import app from "../output/app.json";
+import { Model } from "./types";
+import { formatDate } from "./utils";
 
 function getPosts() {
-  return storage.getItem("POSTS") || DEFAULT_POSTS;
+  return DEFAULT_POSTS;
 }
 
+const POST_VERSION = "0.0.1";
 function App() {
   const defaultPosts = getPosts();
-  const [posts, setPosts] = useState<Post[]>(defaultPosts);
-  const [selectedPost, setSelectedPost] = useState<Post>(defaultPosts[0]);
+  const [posts, setPosts] = useState<Post[]>(DEFAULT_POSTS);
+  const [selectedPost, setSelectedPost] = useState<Post>(defaultPosts[1]);
   const [loading, setLoading] = useState(false);
   const editorRef = useRef<EditorHandle>(null);
   const [mode, setMode] = useState(Mode.View);
   const { connectIdentity } = useIdentity();
   const [did, setDid] = useState(null);
+  const {
+    createPublicContent,
+    loadContent: loadPostContent,
+    updateContent,
+  } = useContent(app.createDapp.name);
+  const [postModel, setPostModel] = useState<Model>({
+    name: "",
+    stream_id: "",
+    isPublicDomain: false,
+  });
 
   useEffect(() => {
+    setPostModel(
+      app.createDapp.streamIDs.find(
+        (model) => model.name === `${app.createDapp.slug}_post`
+      ) as Model
+    );
+
     const storeDID = storage.getItem("DID");
     if (!storeDID) {
       return;
     }
-
-    setDid(storeDID);
 
     setTimeout(() => {
       connect();
@@ -39,14 +58,36 @@ function App() {
   }, []);
 
   useEffect(() => {
+    loadPosts();
+  }, [did]);
+
+  useEffect(() => {
     setMode(selectedPost ? Mode.View : Mode.Edit);
   }, [selectedPost]);
 
-  useEffect(() => {
-    storage.setItem("POSTS", posts);
-  }, [posts]);
+  const loadPosts = async () => {
+    try {
+      setLoading(true);
 
-  const publishPost = () => {
+      const response = await loadPostContent({
+        did,
+        modelName: postModel.name,
+      });
+
+      const postData = [];
+
+      for (const key of Object.keys(response)) {
+        const item: Post = response[key];
+        item.randomUUID = key;
+        postData.push(item);
+      }
+      setPosts([...postData, ...posts]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const publishPost = async () => {
     const { randomUUID, title, content, plainText } = editorRef.current.newPost;
 
     if (!title) {
@@ -60,37 +101,38 @@ function App() {
     }
 
     if (randomUUID) {
-      setPosts(
-        posts.map((item) => {
-          if (item.randomUUID === randomUUID) {
-            return {
-              ...item,
-              title,
-              content,
-              plainText,
-              updatedAt: dayjs().format("YYYY-MM-DD HH:mm:ss"),
-            };
-          }
-
-          return item;
-        })
-      );
+      await updateContent({
+        did,
+        model: postModel,
+        contentId: randomUUID,
+        content: {
+          ...editorRef.current.newPost,
+          updatedAt: dayjs().toISOString(),
+        },
+      });
       Message({ content: "Saved Successfully" });
     } else {
       const postData: Post = {
-        author: "",
+        appVersion: POST_VERSION,
         title,
         content,
         plainText,
-        createdAt: dayjs().format("YYYY-MM-DD HH:mm:ss"),
-        updatedAt: dayjs().format("YYYY-MM-DD HH:mm:ss"),
-        category: "default",
+        createdAt: dayjs().toISOString(),
+        updatedAt: dayjs().toISOString(),
+        category: ["default"],
         tag: [],
         randomUUID: crypto.randomUUID(),
       };
+      await createPublicContent({
+        did,
+        model: postModel,
+        content: {
+          ...postData,
+        },
+      });
 
       setPosts([postData, ...posts]);
-      Message({ content: "Saved Successfully" });
+      Message({ content: "Publish Successfully" });
     }
 
     setMode(Mode.View);
@@ -141,7 +183,9 @@ function App() {
                     className="post-item-content"
                     dangerouslySetInnerHTML={{ __html: item.plainText }}
                   />
-                  <div className="post-item-created">{item.createdAt}</div>
+                  <div className="post-item-created">
+                    {formatDate(item.updatedAt)}
+                  </div>
                 </div>
               ))}
             </div>
@@ -150,7 +194,9 @@ function App() {
 
         <div className="app-content">
           <div className="app-content-header">
-            <div className="header-left">{did && did.slice(0, 10) + "..." + did.slice(did.length - 6)}</div>
+            <div className="header-left">
+              {did && did.slice(0, 10) + "..." + did.slice(did.length - 6)}
+            </div>
             <div className="header-right">
               {mode === Mode.Edit ? (
                 <Tooltip title="View">

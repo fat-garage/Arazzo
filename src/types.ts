@@ -9,12 +9,13 @@ export type EditorHandle = {
 }
 
 export interface Post {
-  author: string;
+  appVersion?: string;
+  author?: string;
   title: string;
   content: string;
   createdAt: string;
   updatedAt: string;
-  category: string;
+  category: string[];
   tag: string[];
   plainText: string;
   randomUUID: string;

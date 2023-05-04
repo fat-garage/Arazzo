@@ -12,8 +12,8 @@ import EditorMenu from "./EditorMenu";
 import Highlight from "@tiptap/extension-highlight";
 import Placeholder from "@tiptap/extension-placeholder";
 import "./Editor.less";
-import dayjs from "dayjs";
 import { Post, EditorHandle, Mode } from "../../types";
+import { formatDate } from '../../utils';
 
 interface Props {
   selectedPost: Post;
@@ -25,9 +25,6 @@ const Editor: ForwardRefRenderFunction<EditorHandle, Props> = (
   forwardedRef
 ) => {
   const [charCount, setCharCount] = useState(selectedPost?.plainText.length);
-  const [updatedAt, setUpdatedAt] = useState(
-    dayjs().format("YYYY-MM-DD HH:mm:ss")
-  );
   const [title, setTitle] = useState(selectedPost?.title);
   useImperativeHandle(
     forwardedRef,
@@ -36,7 +33,6 @@ const Editor: ForwardRefRenderFunction<EditorHandle, Props> = (
         newPost: {
           ...((selectedPost || {}) as Post),
           title,
-          updatedAt,
           content: editor?.getHTML(),
           plainText: editor?.getText(),
         },
@@ -55,7 +51,6 @@ const Editor: ForwardRefRenderFunction<EditorHandle, Props> = (
     content: selectedPost?.content,
     onUpdate: () => {
       setCharCount(editor?.getCharacterCount());
-      setUpdatedAt(dayjs().format("YYYY-MM-DD HH:mm:ss"));
     },
     editable: false,
   });
@@ -102,11 +97,11 @@ const Editor: ForwardRefRenderFunction<EditorHandle, Props> = (
         </div>
         <div className="bar-item">
           <span className="label">createdAt:</span>
-          <span className="value">{selectedPost.createdAt}</span>
+          <span className="value">{formatDate(selectedPost?.createdAt)}</span>
         </div>
         <div className="bar-item">
           <span className="label">updatedAt:</span>
-          <span className="value">{updatedAt}</span>
+          <span className="value">{formatDate(selectedPost?.updatedAt)}</span>
         </div>
       </div>
     </div>

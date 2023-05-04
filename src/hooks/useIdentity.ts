@@ -24,7 +24,7 @@ export function useIdentity() {
         name: METAMASK,
         type: CRYPTO_WALLET_TYPE,
       });
-      console.log({ address });
+      // console.log({ address });
     } catch (error) {
       console.log(error);
     }
@@ -32,7 +32,7 @@ export function useIdentity() {
 
   const switchNetwork = async () => {
     const res = await runtimeConnector.switchNetwork(137);
-    console.log({ res });
+    // console.log({ res });
   };
 
   const connectIdentity = async () => {
@@ -43,7 +43,7 @@ export function useIdentity() {
       appName: app.createDapp.name,
     });
     setDid(did);
-    console.log({ did });
+    // console.log({ did });
     return did;
   };
 
