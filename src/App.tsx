@@ -22,8 +22,8 @@ function getPosts() {
 const POST_VERSION = "0.0.1";
 function App() {
   const defaultPosts = getPosts();
-  const [posts, setPosts] = useState<Post[]>(DEFAULT_POSTS);
-  const [selectedPost, setSelectedPost] = useState<Post>(defaultPosts[1]);
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [selectedPost, setSelectedPost] = useState<Post>(null);
   const [loading, setLoading] = useState(false);
   const editorRef = useRef<EditorHandle>(null);
   const [mode, setMode] = useState(Mode.View);
@@ -39,6 +39,8 @@ function App() {
     stream_id: "",
     isPublicDomain: false,
   });
+  const [publishLoading, setPublishLoading] = useState(false);
+  const [connectLoading, setConnectLoading] = useState(false);
 
   useEffect(() => {
     setPostModel(
@@ -67,6 +69,9 @@ function App() {
 
   const loadPosts = async () => {
     try {
+      if (!did) {
+        return;
+      }
       setLoading(true);
 
       const response = await loadPostContent({
@@ -74,14 +79,18 @@ function App() {
         modelName: postModel.name,
       });
 
-      const postData = [];
+      let postData = [];
 
       for (const key of Object.keys(response)) {
-        const item: Post = response[key];
-        item.randomUUID = key;
-        postData.push(item);
+        const item = response[key];
+        const content = item.content;
+        content.randomUUID = key;
+        postData.push(content);
       }
-      setPosts([...postData, ...posts]);
+      postData = postData.reverse();
+      setPosts(postData);
+
+      postData.length && setSelectedPost(postData[0]);
     } finally {
       setLoading(false);
     }
@@ -100,6 +109,8 @@ function App() {
       return;
     }
 
+    setPublishLoading(true);
+
     if (randomUUID) {
       await updateContent({
         did,
@@ -110,7 +121,7 @@ function App() {
           updatedAt: dayjs().toISOString(),
         },
       });
-      Message({ content: "Saved Successfully" });
+      Message({ content: "Update Successfully" });
     } else {
       const postData: Post = {
         appVersion: POST_VERSION,
@@ -131,10 +142,11 @@ function App() {
         },
       });
 
-      setPosts([postData, ...posts]);
       Message({ content: "Publish Successfully" });
     }
 
+    setPublishLoading(false);
+    loadPosts();
     setMode(Mode.View);
   };
 
@@ -143,7 +155,12 @@ function App() {
   };
 
   const connect = async () => {
+    setConnectLoading(true);
+    setTimeout(() => {
+      setConnectLoading(false);
+    }, 3000);
     const did = await connectIdentity();
+    setConnectLoading(false);
     setDid(did);
     storage.setItem("DID", did);
   };
@@ -155,7 +172,7 @@ function App() {
           <div className="sidebar-header">
             <div className="logo-wrapper">
               <img src={logo} className="logo" />
-              <span className="app-name">Wordblock</span>
+              <span className="app-name">ARAZZO</span>
             </div>
 
             <Tooltip title="Add Post">
@@ -217,11 +234,15 @@ function App() {
               )}
 
               {did ? (
-                <Button type="text" onClick={publishPost}>
+                <Button
+                  type="text"
+                  onClick={publishPost}
+                  loading={publishLoading}
+                >
                   Publish
                 </Button>
               ) : (
-                <Button type="text" onClick={connect}>
+                <Button type="text" onClick={connect} loading={connectLoading}>
                   Get Started
                 </Button>
               )}

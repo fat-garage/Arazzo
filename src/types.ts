@@ -19,6 +19,7 @@ export interface Post {
   tag: string[];
   plainText: string;
   randomUUID: string;
+  isDefault?: boolean;
 }
 
 export enum Mode {
