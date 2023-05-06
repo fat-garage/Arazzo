@@ -2,7 +2,7 @@ export const config = {
   slug: "", // app id, need to match this regular: `^[a-zA-Z][a-zA-Z0-9_]*$`
   name: "", // app name should NOT contain "-"
   logo: "",
-  testnet: true, // set to false for mainnet
+  network: "testnet", // set to "mainnet" for mainnet
   website: "", // you can use localhost:(port) for testing
   defaultFolderName: "Untitled",
   description: "",
