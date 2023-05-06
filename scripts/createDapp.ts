@@ -87,6 +87,7 @@ export const createDapp = async () => {
     originMsg: msg!,
     signedMsg: signedMsg,
     ceramicUrl: params.ceramicUrl,
+    testnet: params.testnet,
   };
 
   const query = gql`
@@ -101,6 +102,7 @@ export const createDapp = async () => {
       $originMsg: String!
       $signedMsg: String!
       $ceramicUrl: String
+      $testnet: Boolean!
     ) {
       createDapp(
         slug: $slug
@@ -113,6 +115,7 @@ export const createDapp = async () => {
         originMsg: $originMsg
         signedMsg: $signedMsg
         ceramicUrl: $ceramicUrl
+        testnet: $testnet
       ) {
         id
         streamIDs {
@@ -128,6 +131,7 @@ export const createDapp = async () => {
         description
         defaultFolderName
         ceramic
+        testnet
       }
     }
   `;
