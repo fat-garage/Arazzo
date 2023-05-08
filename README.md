@@ -73,7 +73,7 @@ models: [
 
 The `schemaName` links to the corresponding `models/_.graphql` file, defining your [ComposeDB](https://composedb.js.org/docs/0.4.x/guides/data-modeling/schemas) models & schemas. By default, you need to set `isPublicDomain=false` to ensure cross-app data security. If you set `isPublicDomain=true`, another dApp can compose this data model, indexing public data from your databases. 
 
-You can also select which Ceramic endpoint your dApp is connecting to, to store data models and actual user data. If you are running a production-ready dApp, you are suggested to run your own Ceramic node. You can deploy your own ceramic node using our tools [dapp-backend](https://github.com/dataverse-os/dapp-backend). Note that if your want to use your own ceramic, you need to ensure the url is accessible.
+You can also select which Ceramic endpoint your dApp is connecting to, to store data models and actual user data. App data on dataverse test ceramic node could be cleared regularly, so do NOT put anything important on test network. If you are running a production-ready dApp, you are suggested to run your own Ceramic node. You can deploy your own ceramic node using our tools [dapp-backend](https://github.com/dataverse-os/dapp-backend). Note that if your want to use your own ceramic, you need to ensure the url is accessible.
 
 Finally you can publish your dApp: 
 

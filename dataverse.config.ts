@@ -17,5 +17,5 @@ export const config = {
       schemaName: "profile.graphql",
     },
   ],
-  ceramicUrl: null, // leave null to deploy ComposeDB on our Ceramic node "https://dataverseceramicdaemon.com"
+  ceramicUrl: null, // leave null to deploy ComposeDB on dataverse test Ceramic node. Set to {Your Ceramic node Url} for mainnet. This field only works when network is set as "mainnet".
 };
