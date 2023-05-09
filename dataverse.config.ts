@@ -2,7 +2,6 @@ export const config = {
   slug: "", // app id, need to match this regular: `^[a-zA-Z][a-zA-Z0-9_]*$`
   name: "", // app name should NOT contain "-"
   logo: "",
-  network: "testnet", // set to "mainnet" for mainnet
   website: "", // you can use localhost:(port) for testing
   defaultFolderName: "Untitled",
   description: "",
@@ -17,5 +16,5 @@ export const config = {
       schemaName: "profile.graphql",
     },
   ],
-  ceramicUrl: null, // leave null to use dataverse test Ceramic node. Set to {Your Ceramic node Url} for mainnet, should start with "https://". This field only works when network is set as "mainnet".
+  ceramicUrl: null, // leave null to use dataverse test Ceramic node. Set to {Your Ceramic node Url} for mainnet, should start with "https://".
 };

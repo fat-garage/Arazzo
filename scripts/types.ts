@@ -15,5 +15,4 @@ export interface CreateDappProps {
   originMsg: string;
   signedMsg: string;
   ceramicUrl: string | null;
-  network: string;
 }
