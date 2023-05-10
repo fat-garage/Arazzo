@@ -253,6 +253,7 @@ export function useContent(appName: string) {
       new Date().toISOString();
 
     const res = await runtimeConnector.updateStreams({
+      appName,
       streamsRecord: {
         [contentId]: {
           streamContent: mirrorFile.content,
@@ -297,6 +298,7 @@ export function useContent(appName: string) {
       });
     }
     const res = await runtimeConnector.updateStreams({
+      appName,
       streamsRecord: {
         [contentId]: {
           streamContent: {
@@ -341,6 +343,7 @@ export function useContent(appName: string) {
   }) => {
     const content = contentRecord[contentId]?.content;
     const res = await runtimeConnector.updateStreams({
+      appName,
       streamsRecord: {
         [contentId]: {
           streamContent: {
@@ -389,6 +392,7 @@ export function useContent(appName: string) {
     const fileType = contentRecord[contentId]?.fileType;
 
     const res = await runtimeConnector.updateStreams({
+      appName,
       streamsRecord: {
         [contentId]: {
           streamContent: {
@@ -482,6 +486,7 @@ export function useContent(appName: string) {
     });
 
     const res = await runtimeConnector.updateStreams({
+      appName,
       streamsRecord: {
         [contentId]: { streamContent: content },
       },
