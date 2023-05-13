@@ -1,14 +1,13 @@
 import React from "react";
 import {
-  createBrowserRouter,
+  createHashRouter,
   RouterProvider,
-  useLoaderData,
 } from "react-router-dom";
 
 import PostEditor from "./views/PostEditor";
 import PostDetails from "./views/PostDetails";
 
-const router = createBrowserRouter([
+const router = createHashRouter([
   {
     path: "/",
     element: <PostEditor />

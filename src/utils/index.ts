@@ -13,8 +13,8 @@ export function formatDate(date) {
 
 export function getShareLink(id) {
   if (location.href.includes("localhost")) {
-    return "http://localhost:5222/post/" + id;
+    return "http://localhost:5222/#/post/" + id;
   }
 
-  return "https://venerable-queijadas-290c8d.netlify.app/post/" + id;
+  return "https://venerable-queijadas-290c8d.netlify.app/#/post/" + id;
 }

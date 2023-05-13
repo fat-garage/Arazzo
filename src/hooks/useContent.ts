@@ -565,5 +565,6 @@ export function useContent(appName: string) {
     updateContentFromPrivateToPublic,
     updateContentFromPublicToPrivate,
     editProfileContent,
+    deleteContent
   };
 }

@@ -7,6 +7,7 @@ import {
   EyeOutlined,
   EditOutlined,
   ShareAltOutlined,
+  DeleteOutlined
 } from "@ant-design/icons";
 import { Post, EditorHandle, Mode } from "../types";
 import dayjs from "dayjs";
@@ -34,6 +35,8 @@ function PostEditor() {
     createPublicContent,
     loadContents: loadPostContents,
     updateContent,
+    deleteContent: deletePostContent,
+    contentRecord,
   } = useContent(app.createDapp.name);
   const [postModel, setPostModel] = useState<Model>({
     name: "",
@@ -173,6 +176,18 @@ function PostEditor() {
     Message({ content: "Share Link copied." });
   };
 
+  const deletePost = async () => {
+    setPublishLoading(true);
+    const file = contentRecord[selectedPost.randomUUID];
+    await deletePostContent({
+      did,
+      content: file
+    })
+    setPublishLoading(false);
+    loadPosts()
+    setMode(Mode.View);
+  }
+
   return (
     <Spin spinning={loading}>
       <div className="app-container">
@@ -224,15 +239,25 @@ function PostEditor() {
             </div>
             <div className="header-right">
               {selectedPost ? (
-                <CopyToClipboard text={link}>
-                  <Tooltip title="Share Post">
+                <>
+                  {/* <Tooltip title="Delete Post">
                     <Button
-                      icon={<ShareAltOutlined />}
+                      icon={<DeleteOutlined />}
                       type="text"
-                      onClick={sharePostLink}
+                      onClick={deletePost}
+                      loading={publishLoading}
                     />
-                  </Tooltip>
-                </CopyToClipboard>
+                  </Tooltip> */}
+                  <CopyToClipboard text={link}>
+                    <Tooltip title="Share Post">
+                      <Button
+                        icon={<ShareAltOutlined />}
+                        type="text"
+                        onClick={sharePostLink}
+                      />
+                    </Tooltip>
+                  </CopyToClipboard>
+                </>
               ) : null}
               {mode === Mode.Edit ? (
                 <Tooltip title="View">
