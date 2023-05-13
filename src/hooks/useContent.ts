@@ -11,7 +11,7 @@ export function useContent(appName: string) {
     Record<string, MirrorFile>
   >({});
 
-  const loadContent = async ({
+  const loadContents = async ({
     did,
     modelName,
   }: {
@@ -513,7 +513,7 @@ export function useContent(appName: string) {
     modelName: string;
     contentId: string;
   }) => {
-    const contentRecord = await loadContent({ did, modelName });
+    const contentRecord = await loadContents({ did, modelName });
 
     setContentRecord(contentRecord);
 
@@ -544,8 +544,17 @@ export function useContent(appName: string) {
     return contentRecordCopy[contentId];
   };
 
+  const loadContent = async (contentId: string) => {
+    const stream = await runtimeConnector.loadStream(
+      contentId
+    );
+
+    return stream
+  };
+
   return {
     contentRecord,
+    loadContents,
     loadContent,
     createPublicContent,
     createPrivateContent,
