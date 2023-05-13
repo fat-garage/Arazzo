@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useIdentity } from "../hooks/useIdentity";
 import storage from "../utils/storage";
-import { Spin } from "antd";
+import { Spin, Button } from "antd";
 import app from "../../output/app.json";
 import { useContent } from "../hooks/useContent";
 import "./PostDetails.less";
@@ -11,7 +11,6 @@ import StarterKit from "@tiptap/starter-kit";
 import Highlight from "@tiptap/extension-highlight";
 import logo from "../assets/images/logo.png";
 import { formatDate } from "../utils";
-
 
 export default function PostDetails() {
   const { connectIdentity } = useIdentity();
@@ -60,8 +59,8 @@ export default function PostDetails() {
 
   const loadPost = async () => {
     const res = await loadPostContent(id);
-    console.log(res)
-    res.streamContent.content.author = res.streamContent.controller
+    console.log(res);
+    res.streamContent.content.author = res.streamContent.controller;
 
     setPostContent(res.streamContent.content);
   };
@@ -70,22 +69,30 @@ export default function PostDetails() {
     <Spin spinning={loading}>
       <div className="post-details">
         <div className="post-header">
-        <div className="logo-wrapper" onClick={() => navigate("/")}>
-              <img src={logo} className="logo" />
-              <span className="app-name">ARAZZO</span>
-            </div>
+          <div className="logo-wrapper" onClick={() => navigate("/")}>
+            <img src={logo} className="logo" />
+            <span className="app-name">ARAZZO</span>
+          </div>
 
-            <div className="did">
-              {did && did.slice(0, 10) + "..." + did.slice(did.length - 6)}
+          {!did ? (
+            <div className="login-wrapper">
+              <Button type={"primary"} onClick={connect}>
+                Login
+              </Button>
             </div>
+          ) : (
+            <div className="did">
+              {did.slice(0, 10) + "..." + did.slice(did.length - 6)}
+            </div>
+          )}
         </div>
         <div className="post-container">
           <div className="post-title">{postContent?.title}</div>
-          {
-            postContent && <div className="post-date">
+          {postContent && (
+            <div className="post-date">
               {formatDate(postContent?.updatedAt)}
             </div>
-          }
+          )}
           <EditorContent editor={editor} />
         </div>
       </div>
