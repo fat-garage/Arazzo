@@ -60,7 +60,14 @@ export default function PostDetails() {
   const loadPost = async () => {
     const res = await loadPostContent(id);
     console.log(res);
-    res.streamContent.content.author = res.streamContent.controller;
+    let content = null;
+
+    if (typeof res.streamContent.content) {
+      content = res.streamContent;
+    } else {
+      content = res.streamContent.content;
+    }
+    console.log(content)
 
     setPostContent(res.streamContent.content);
   };
