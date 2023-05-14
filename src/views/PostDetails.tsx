@@ -59,17 +59,16 @@ export default function PostDetails() {
 
   const loadPost = async () => {
     const res = await loadPostContent(id);
-    console.log(res);
+    console.log('~~~~~~~~~~~~~~', res);
     let content = null;
 
-    if (typeof res.streamContent.content) {
+    if (typeof res.streamContent.content === 'string') {
       content = res.streamContent;
     } else {
       content = res.streamContent.content;
     }
-    console.log(content)
 
-    setPostContent(res.streamContent.content);
+    setPostContent(content);
   };
 
   return (
