@@ -20,6 +20,7 @@ export default function PostDetails() {
   const { id } = useParams();
   const [postContent, setPostContent] = useState(null);
   const navigate = useNavigate();
+  const [shouldShowLoginButton, setShouldShowLoginButton] = useState(false);
 
   const editor = useEditor({
     extensions: [StarterKit, Highlight],
@@ -36,6 +37,7 @@ export default function PostDetails() {
   useEffect(() => {
     const storeDID = storage.getItem("DID");
     if (!storeDID) {
+      setShouldShowLoginButton(true);
       return;
     }
 
@@ -48,21 +50,22 @@ export default function PostDetails() {
     setLoading(true);
 
     setTimeout(() => {
+      setShouldShowLoginButton(true);
       setLoading(false);
-    }, 3000);
+    }, 10000);
     const did = await connectIdentity();
     await loadPost();
     setLoading(false);
+    setShouldShowLoginButton(false);
     setDid(did);
     storage.setItem("DID", did);
   };
 
   const loadPost = async () => {
     const res = await loadPostContent(id);
-    console.log('~~~~~~~~~~~~~~', res);
     let content = null;
 
-    if (typeof res.streamContent.content === 'string') {
+    if (typeof res.streamContent.content === "string") {
       content = res.streamContent;
     } else {
       content = res.streamContent.content;
@@ -80,15 +83,15 @@ export default function PostDetails() {
             <span className="app-name">ARAZZO</span>
           </div>
 
-          {!did ? (
+          {shouldShowLoginButton ? (
             <div className="login-wrapper">
-              <Button type={"primary"} onClick={connect}>
+              <Button type={"primary"} onClick={connect} loading={loading}>
                 Login
               </Button>
             </div>
           ) : (
             <div className="did">
-              {did.slice(0, 10) + "..." + did.slice(did.length - 6)}
+              {did && did.slice(0, 10) + "..." + did.slice(did.length - 6)}
             </div>
           )}
         </div>

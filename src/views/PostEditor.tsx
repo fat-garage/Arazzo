@@ -7,7 +7,7 @@ import {
   EyeOutlined,
   EditOutlined,
   ShareAltOutlined,
-  DeleteOutlined
+  DeleteOutlined,
 } from "@ant-design/icons";
 import { Post, EditorHandle, Mode } from "../types";
 import dayjs from "dayjs";
@@ -87,15 +87,23 @@ function PostEditor() {
 
       for (const key of Object.keys(response)) {
         const item = response[key];
-        const content = item.content;
+        let content = null;
+        console.log(item);
+        if (typeof item.content === "string") {
+          content = item;
+        } else {
+          content = item.content;
+        }
         content.randomUUID = key;
         postData.push(content);
       }
       postData = postData.reverse();
       setPosts(postData);
 
-      postData.length && setSelectedPost(postData[0]);
-      setLink(getShareLink(postData[0].randomUUID));
+      if (postData.length) {
+        setSelectedPost(postData[0]);
+        setLink(getShareLink(postData[0].randomUUID));
+      }
     } finally {
       setLoading(false);
     }
@@ -117,6 +125,11 @@ function PostEditor() {
     setPublishLoading(true);
 
     if (randomUUID) {
+      if (!contentRecord[randomUUID].indexFileId) {
+        Message({ content: "Sorry, it's not a mirror file." });
+        setPublishLoading(false);
+        return;
+      }
       await updateContent({
         did,
         model: postModel,
@@ -156,7 +169,9 @@ function PostEditor() {
   };
 
   const selectPost = (post: Post) => {
-    setLink(getShareLink(post.randomUUID));
+    if (post) {
+      setLink(getShareLink(post.randomUUID));
+    }
     setSelectedPost(post);
   };
 
@@ -181,12 +196,12 @@ function PostEditor() {
     const file = contentRecord[selectedPost.randomUUID];
     await deletePostContent({
       did,
-      content: file
-    })
+      content: file,
+    });
     setPublishLoading(false);
-    loadPosts()
+    loadPosts();
     setMode(Mode.View);
-  }
+  };
 
   return (
     <Spin spinning={loading}>
