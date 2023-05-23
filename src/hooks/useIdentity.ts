@@ -1,55 +1,51 @@
 import React, { useState, useEffect, useContext } from "react";
-import {
-  RuntimeConnector,
-  Extension,
-  METAMASK,
-  CRYPTO_WALLET_TYPE,
-  Apps,
-  ModelNames,
-  StreamObject,
-  FileType,
-  MirrorFile,
-  StructuredFolders,
-} from "@dataverse/runtime-connector";
+import { CRYPTO_WALLET } from "@dataverse/runtime-connector";
 import { Context } from "../main";
 import app from "../../output/app.json";
 
 export function useIdentity() {
-  const [did, setDid] = useState('');
+  const [did, setDid] = useState("");
+
   const { runtimeConnector } = useContext(Context);
 
-  const connectWallet = async () => {
-    try {
-      const address = await runtimeConnector.connectWallet({
-        name: METAMASK,
-        type: CRYPTO_WALLET_TYPE,
-      });
-      console.log({ address });
-    } catch (error) {
-      console.log(error);
-    }
+  const chooseWallet = async () => {
+    const wallet = await runtimeConnector.chooseWallet();
+    return wallet;
+  };
+
+  const connectWallet = async (wallet: CRYPTO_WALLET) => {
+    const address = await runtimeConnector.connectWallet(wallet);
+    return address;
+  };
+
+  const getCurrentWallet = async () => {
+    const res = await runtimeConnector.getCurrentWallet();
+    return res;
   };
 
   const switchNetwork = async () => {
     const res = await runtimeConnector.switchNetwork(137);
-    console.log({ res });
+    return res;
   };
 
   const connectIdentity = async () => {
-    await connectWallet();
+    const currentWallet = await getCurrentWallet();
+    if (!currentWallet) {
+      const wallet = await chooseWallet();
+      await connectWallet(wallet);
+    }
     await switchNetwork();
     const did = await runtimeConnector.connectIdentity({
-      wallet: { name: METAMASK, type: CRYPTO_WALLET_TYPE },
       appName: app.createDapp.name,
     });
     setDid(did);
-    console.log({ did });
     return did;
   };
 
   return {
     did,
     setDid,
+    chooseWallet,
     connectWallet,
     switchNetwork,
     connectIdentity,
