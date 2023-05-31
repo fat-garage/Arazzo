@@ -1,4 +1,4 @@
-export function getAddressFromDid(did: string) {
+export function getAddressFromPkh(did: string) {
   return did.slice(did.lastIndexOf(":") + 1);
 }
 

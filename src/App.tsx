@@ -2,10 +2,11 @@ import "./App.css";
 import React, { useState, useEffect } from "react";
 import { Currency, FileType, MirrorFile } from "@dataverse/runtime-connector";
 import app from "../output/app.json";
-import { useContent } from "./hooks/useContent";
+import { useStream } from "./hooks/useStream";
 import { useIdentity } from "./hooks/useIdentity";
 import { Model } from "./types";
 import ReactJson from "react-json-view";
+import { useWallet } from "./hooks/useWallet";
 
 function App() {
   const postVersion = "0.0.1";
@@ -21,19 +22,20 @@ function App() {
   });
 
   // Indicates a certain content to be operated on currently
-  const [currentContentId, setCurrentContentId] = useState<string>();
+  const [currentStreamId, setCurrentStreamId] = useState<string>();
   const [publicPost, setPublicPost] = useState<MirrorFile>();
   const [privatePost, setPrivatePost] = useState<MirrorFile>();
   const [datatokenPost, setDatatokenPost] = useState<MirrorFile>();
   const [monetizedPost, setMonetizedPost] = useState<MirrorFile>();
   const [unlockedPost, setUnlockedPost] = useState<MirrorFile>();
   const [encryptedPost, setEncryptedPost] = useState<MirrorFile>();
-  const [decryptedPost, setDecryptedPost] = useState<MirrorFile>();
+  // const [decryptedPost, setDecryptedPost] = useState<MirrorFile>();
   const [updatedPost, setUpdatedPost] = useState<MirrorFile>();
   const [posts, setPosts] = useState<MirrorFile[]>(); // All posts
   const [profile, setProfile] = useState<MirrorFile>();
 
-  const { did, connectIdentity } = useIdentity();
+  const { wallet, connectWallet } = useWallet();
+  const { pkh, createCapibility } = useIdentity(app.createDapp.name, wallet);
 
   const {
     contentRecord: postContentRecord,
@@ -43,12 +45,11 @@ function App() {
     createDatatokenContent,
     monetizeContent,
     unlockContent,
-    updateContentFromPrivateToPublic,
     updateContentFromPublicToPrivate,
     updateContent,
-  } = useContent(app.createDapp.name);
+  } = useStream(app.createDapp.name);
 
-  const { loadContent: loadProfileContent, editProfileContent } = useContent(
+  const { loadContent: loadProfileContent, editProfileContent } = useStream(
     app.createDapp.name
   );
 
@@ -67,8 +68,8 @@ function App() {
 
   /*** Identity ***/
   const connect = async () => {
-    const did = await connectIdentity();
-    return did;
+    const pkh = await createCapibility();
+    return pkh;
   };
 
   /*** Identity ***/
@@ -77,7 +78,7 @@ function App() {
   const createPublicPost = async () => {
     const date = new Date().toISOString();
     const res = await createPublicContent({
-      did,
+      pkh,
       model: postModel,
       content: {
         appVersion: postVersion,
@@ -91,7 +92,7 @@ function App() {
       },
     });
 
-    setCurrentContentId(res.contentId);
+    setCurrentStreamId(res.streamId);
     setPublicPost(res.content);
     console.log(res);
   };
@@ -99,7 +100,6 @@ function App() {
   const createPrivatePost = async () => {
     const date = new Date().toISOString();
     const res = await createPrivateContent({
-      did,
       model: postModel,
       content: {
         appVersion: postVersion,
@@ -117,7 +117,7 @@ function App() {
         videos: false,
       },
     });
-    setCurrentContentId(res.contentId);
+    setCurrentStreamId(res.streamId);
     setPrivatePost(res.content);
     console.log(res);
   };
@@ -125,7 +125,7 @@ function App() {
   const createDatatokenPost = async () => {
     const date = new Date().toISOString();
     const res = await createDatatokenContent({
-      did,
+      pkh,
       model: postModel,
       content: {
         appVersion: postVersion,
@@ -147,19 +147,19 @@ function App() {
         videos: false,
       },
     });
-    setCurrentContentId(res.contentId);
+    setCurrentStreamId(res.streamId);
     setDatatokenPost(res.content);
     console.log(res);
   };
 
   const monetizePost = async () => {
-    if (!currentContentId) {
+    if (!currentStreamId) {
       return;
     }
     const res = await monetizeContent({
-      did,
+      pkh,
       model: postModel,
-      contentId: currentContentId,
+      streamId: currentStreamId,
       lensNickName: "jackieth", //Only supports lower case characters, numbers, must be minimum of 5 length and maximum of 26 length
       currency: Currency.WMATIC,
       amount: 0.0001,
@@ -175,38 +175,38 @@ function App() {
   };
 
   const unlockPost = async () => {
-    if (!currentContentId) {
+    if (!currentStreamId) {
       return;
     }
     const res = await unlockContent({
-      did,
-      contentId: currentContentId,
+      pkh,
+      streamId: currentStreamId,
     });
     console.log(res);
     setUnlockedPost(res.content);
   };
 
-  const updatePostFromPrivateToPublic = async () => {
-    if (!currentContentId) {
-      return;
-    }
-    const res = await updateContentFromPrivateToPublic({
-      did,
-      model: postModel,
-      contentId: currentContentId,
-    });
-    console.log(res);
-    setDecryptedPost(res.content);
-  };
+  // const updatePostFromPrivateToPublic = async () => {
+  //   if (!currentStreamId) {
+  //     return;
+  //   }
+  //   const res = await updateContentFromPrivateToPublic({
+  //     pkh,
+  //     model: postModel,
+  //     contentId: currentStreamId,
+  //   });
+  //   console.log(res);
+  //   setDecryptedPost(res.content);
+  // };
 
   const updatePostFromPublicToPrivate = async () => {
-    if (!currentContentId) {
+    if (!currentStreamId) {
       return;
     }
     const res = await updateContentFromPublicToPrivate({
-      did,
+      pkh,
       model: postModel,
-      contentId: currentContentId,
+      streamId: currentStreamId,
       encrypted: {
         text: true,
         images: true,
@@ -218,15 +218,15 @@ function App() {
   };
 
   const updatePost = async () => {
-    if (!currentContentId) {
+    if (!currentStreamId) {
       return;
     }
-    const content = postContentRecord[currentContentId];
+    const content = postContentRecord[currentStreamId];
 
     const res = await updateContent({
-      did,
+      pkh,
       model: postModel,
-      contentId: currentContentId,
+      streamId: currentStreamId,
       content: {
         text: "update my post -- " + new Date().toISOString(),
         images: [
@@ -244,8 +244,8 @@ function App() {
 
   const loadPosts = async () => {
     const postRecord = await loadPostContent({
-      did,
-      modelName: postModel.name,
+      pkh,
+      modelId: postModel.stream_id,
     });
     console.log(postRecord);
     setPosts(Object.values(postRecord));
@@ -254,7 +254,7 @@ function App() {
     //     content.fileType === FileType.Datatoken ||
     //     content.fileType === FileType.Private
     //   ) {
-    //     setCurrentContentId(contentId);
+    //     setCurrentStreamId(contentId);
     //   }
     // });
   };
@@ -264,8 +264,8 @@ function App() {
   /*** Profile ***/
   const loadProfile = async () => {
     const res = await loadProfileContent({
-      did,
-      modelName: profileModel.name,
+      pkh,
+      modelId: profileModel.stream_id,
     });
     console.log(res);
     setProfile(Object.values(res)[0]);
@@ -273,7 +273,7 @@ function App() {
 
   const editProfile = async () => {
     const res = await editProfileContent({
-      did,
+      pkh,
       model: profileModel,
       content: {
         name: "Jackie",
@@ -293,7 +293,7 @@ function App() {
   return (
     <div className="App">
       <button onClick={connect}>connect</button>
-      <div className="blackText">{did}</div>
+      <div className="blackText">{pkh}</div>
       <hr />
       <button onClick={createPublicPost}>createPublicPost</button>
       {publicPost && (
@@ -336,14 +336,14 @@ function App() {
           <ReactJson src={encryptedPost} collapsed={true} />
         </div>
       )}
-      <button onClick={updatePostFromPrivateToPublic}>
+      {/* <button onClick={updatePostFromPrivateToPublic}>
         updatePostFromPrivateToPublic
       </button>
       {decryptedPost && (
         <div className="json-view">
           <ReactJson src={decryptedPost} collapsed={true} />
         </div>
-      )}
+      )} */}
       <button onClick={updatePost}>updatePost</button>
       {updatedPost && (
         <div className="json-view">
