@@ -1,18 +1,31 @@
 import { useState, useContext } from "react";
-import { FileType, Currency, MirrorFile } from "@dataverse/runtime-connector";
+import { FileType, Currency, MirrorFile, CRYPTO_WALLET } from "@dataverse/runtime-connector";
 import { Context } from "../main";
 import { Model } from "../types";
 import { getAddressFromPkh } from "../utils";
 import { StreamContent } from "@dataverse/runtime-connector/dist/cjs/types/data-models/types";
 
-export function useStream(appName: string) {
+export function useStream(appName: string, wallet?: CRYPTO_WALLET) {
   const { runtimeConnector } = useContext(Context);
+  const [pkh, setPkh] = useState("");
+  const [streamRecord, setStreamRecord] = useState<Record<string, MirrorFile>>({});
 
-  const [contentRecord, setContentRecord] = useState<
-    Record<string, MirrorFile>
-  >({});
+  const checkCapibility = async () => {
+    const res = await runtimeConnector.checkCapibility(appName);
+    return res;
+  };
 
-  const loadContent = async ({
+  const createCapibility = async () => {
+    const currentPkh = await runtimeConnector.createCapibility({
+      wallet,
+      app: appName
+    })
+
+    setPkh(currentPkh);
+    return currentPkh;
+  };
+
+  const loadStream = async ({
     pkh,
     modelId,
   }: {
@@ -30,29 +43,31 @@ export function useStream(appName: string) {
         modelId
       });
     }
-    setContentRecord(streams);
+    setStreamRecord(streams);
     return streams;
   };
 
-  const createPublicContent = async ({
+  const createPublicStream = async ({
     model,
-    content,
+    stream,
   }: {
     pkh: string;
     model: Model;
-    content?: object;
+    stream?: object;
   }) => {
+    console.log("model:", model)
+    console.log("stream:", stream)
     let encrypted = {} as any;
-    if (content && Object.keys(content).length > 0) {
-      Object.keys(content).forEach((key) => {
+    if (stream && Object.keys(stream).length > 0) {
+      Object.keys(stream).forEach((key) => {
         encrypted[key] = false;
       });
     }
 
     const streamContent = {
-      ...content,
+      ...stream,
       ...(!model.isPublicDomain &&
-        content && {
+        stream && {
         encrypted: JSON.stringify(encrypted),
       }),
     }
@@ -63,32 +78,32 @@ export function useStream(appName: string) {
       });
 
     if (!newFile && !existingFile) {
-      throw "Failed to create content";
+      throw "Failed to create stream";
     }
     (existingFile || newFile)!.content = streamContent;
 
-    const contentObject = {
-      content: (existingFile || newFile)!,
+    const streamObject = {
+      stream: (existingFile || newFile)!,
       streamId: (existingFile || newFile)!.contentId!,
     };
 
-    updateContentRecord({ contentObject, isCreate: true });
+    _updateStreamRecord({ streamObject, isCreate: true });
 
-    return contentObject;
+    return streamObject;
   };
 
-  const createPrivateContent = async ({
+  const createEncryptedStream = async ({
     model,
-    content,
+    stream,
     encrypted,
   }: {
     model: Model;
-    content: object;
+    stream: object;
     encrypted: object;
   }) => {
     const streamContent = {
-      ...content,
-      ...(content && {
+      ...stream,
+      ...(stream && {
         encrypted: JSON.stringify(encrypted),
       }),
     }
@@ -104,17 +119,212 @@ export function useStream(appName: string) {
 
     newFile.content = streamContent;
 
-    const contentObject = {
-      content: newFile,
+    const streamObject = {
+      stream: newFile,
       streamId: newFile.contentId!,
     };
 
-    updateContentRecord({ contentObject, isCreate: true });
+    _updateStreamRecord({ streamObject, isCreate: true });
 
-    return contentObject;
+    return streamObject;
   };
 
-  const getProfileId = async ({
+  const createPayableStream = async ({
+    pkh,
+    model,
+    stream,
+    lensNickName,
+    currency,
+    amount,
+    collectLimit,
+    encrypted,
+  }: {
+    pkh: string;
+    model: Model;
+    stream: object;
+    lensNickName?: string;
+    currency: Currency;
+    amount: number;
+    collectLimit: number;
+    encrypted: object;
+  }) => {
+    const profileId = await _getProfileId({ pkh, lensNickName });
+
+    const res = await createPublicStream({
+      pkh,
+      model,
+      stream: {
+        ...stream,
+        text: "",
+        images: [],
+        videos: [],
+      },
+    });
+
+    res.stream.content = stream;
+
+    return monetizeStream({
+      pkh,
+      model,
+      lensNickName,
+      streamId: res.streamId,
+      mirrorFile: res.stream,
+      profileId,
+      encrypted,
+      currency,
+      amount,
+      collectLimit,
+    });
+  };
+
+  const monetizeStream = async ({
+    pkh,
+    model,
+    streamId,
+    lensNickName,
+    profileId,
+    mirrorFile,
+    encrypted,
+    currency,
+    amount,
+    collectLimit,
+  }: {
+    pkh: string;
+    model: Model;
+    streamId: string;
+    lensNickName?: string;
+    mirrorFile?: MirrorFile;
+    profileId?: string;
+    encrypted: object;
+    currency: Currency;
+    amount: number;
+    collectLimit: number;
+  }) => {
+    if (!profileId) {
+      profileId = await _getProfileId({ pkh, lensNickName });
+    }
+    if (!mirrorFile) {
+      mirrorFile = streamRecord[streamId];
+    }
+
+    let streamContent: StreamContent;
+    let currentFile: MirrorFile;
+    try {
+      const res = await runtimeConnector.monetizeFile({
+        datatokenVars: {
+          profileId,
+          currency,
+          amount,
+          collectLimit,
+        }
+      });
+      streamContent = res.streamContent!;
+      currentFile = res.currentFile;
+    } catch (error: any) {
+      console.log(error);
+      if (
+        error !==
+        "networkConfigurationId undefined does not match a configured networkConfiguration"
+      ) {
+        await runtimeConnector.removeFiles({
+          app: appName,
+          indexFileIds: [mirrorFile.indexFileId]
+        })
+      }
+      throw error;
+    }
+
+    (mirrorFile.content as { encrypted: string }).encrypted =
+      JSON.stringify(encrypted);
+    (mirrorFile.content as { updatedAt: string }).updatedAt =
+      new Date().toISOString();
+
+    await runtimeConnector.updateStream({
+      app: appName,
+      streamId,
+      streamContent,
+      syncImmediately: true,
+    });
+
+    return {
+      streamId,
+      content: await _reloadStreamRecord({
+        pkh,
+        modelId: model.stream_id,
+        streamId,
+      }),
+    };
+  };
+
+  const updateStream = async ({
+    pkh,
+    model,
+    streamId,
+    stream,
+    encrypted,
+  }: {
+    pkh: string;
+    model: Model;
+    streamId: string;
+    stream: object;
+    encrypted?: object;
+  }) => {
+    const fileType = streamRecord[streamId]?.fileType;
+
+    await runtimeConnector.updateStream({
+      app: appName,
+      streamId,
+      streamContent: {
+        ...stream,
+        ...(!model.isPublicDomain &&
+          stream &&
+          encrypted &&
+          (fileType === FileType.Private ||
+            fileType === FileType.Datatoken) && {
+          encrypted: JSON.stringify(encrypted),
+        }),
+      },
+      syncImmediately: true,
+    });
+
+    return {
+      streamId,
+      stream: await _reloadStreamRecord({
+        pkh,
+        modelId: model.stream_id,
+        streamId,
+      }),
+    };
+  };
+
+  const unlockStream = async ({
+    streamId,
+  }: {
+    pkh: string;
+    streamId: string;
+  }) => {
+    const stream = streamRecord[streamId];
+
+    const res = await runtimeConnector.unlock({
+      app: appName,
+      streamId,
+      indexFileId: stream.indexFileId,
+    });
+
+    stream.content = res;
+
+    const streamObject = {
+      streamId: stream.contentId!,
+      stream: stream.content,
+    };
+
+    return {
+      streamId,
+      stream: _updateStreamRecord({streamObject}),
+    };
+  };
+
+  const _getProfileId = async ({
     pkh,
     lensNickName,
   }: {
@@ -141,277 +351,8 @@ export function useStream(appName: string) {
     return profileId;
   };
 
-  const createDatatokenContent = async ({
-    pkh,
-    model,
-    content,
-    lensNickName,
-    currency,
-    amount,
-    collectLimit,
-    encrypted,
-  }: {
-    pkh: string;
-    model: Model;
-    content: object;
-    lensNickName?: string;
-    currency: Currency;
-    amount: number;
-    collectLimit: number;
-    encrypted: object;
-  }) => {
-    const profileId = await getProfileId({ pkh, lensNickName });
 
-    const res = await createPublicContent({
-      pkh,
-      model,
-      content: {
-        ...content,
-        text: "",
-        images: [],
-        videos: [],
-      },
-    });
-
-    res.content.content = content;
-
-    return monetizeContent({
-      pkh,
-      model,
-      lensNickName,
-      streamId: res.streamId,
-      mirrorFile: res.content,
-      profileId,
-      encrypted,
-      currency,
-      amount,
-      collectLimit,
-    });
-  };
-
-  const monetizeContent = async ({
-    pkh,
-    model,
-    streamId,
-    lensNickName,
-    profileId,
-    mirrorFile,
-    encrypted,
-    currency,
-    amount,
-    collectLimit,
-  }: {
-    pkh: string;
-    model: Model;
-    streamId: string;
-    lensNickName?: string;
-    mirrorFile?: MirrorFile;
-    profileId?: string;
-    encrypted: object;
-    currency: Currency;
-    amount: number;
-    collectLimit: number;
-  }) => {
-    if (!profileId) {
-      profileId = await getProfileId({ pkh, lensNickName });
-    }
-    if (!mirrorFile) {
-      mirrorFile = contentRecord[streamId];
-    }
-
-    let streamContent: StreamContent;
-    let currentFile: MirrorFile;
-    try {
-      const res = await runtimeConnector.monetizeFile({
-        datatokenVars: {
-          profileId,
-          currency,
-          amount,
-          collectLimit,
-        }
-      });
-      streamContent = res.streamContent!;
-      currentFile = res.currentFile;
-    } catch (error: any) {
-      console.log(error);
-      if (
-        error !==
-        "networkConfigurationId undefined does not match a configured networkConfiguration"
-      ) {
-        await deleteContent({ pkh, content: mirrorFile });
-      }
-      throw error;
-    }
-
-    (mirrorFile.content as { encrypted: string }).encrypted =
-      JSON.stringify(encrypted);
-    (mirrorFile.content as { updatedAt: string }).updatedAt =
-      new Date().toISOString();
-
-    await runtimeConnector.updateStream({
-      app: appName,
-      streamId,
-      streamContent,
-      syncImmediately: true,
-    });
-
-    return {
-      streamId,
-      content: await reloadContentRecord({
-        pkh,
-        modelId: model.stream_id,
-        streamId,
-      }),
-    };
-  };
-
-  const updateContentFromPublicToPrivate = async ({
-    pkh,
-    model,
-    streamId,
-    encrypted,
-  }: {
-    pkh: string;
-    model: Model;
-    streamId: string;
-    encrypted: object;
-  }) => {
-    const streamContent = contentRecord[streamId]?.content;
-    const res = await runtimeConnector.updateStream({
-      app: appName,
-      streamId,
-      streamContent: {
-        ...(!model.isPublicDomain &&
-          streamContent && {
-          encrypted: JSON.stringify(encrypted),
-        }),
-      },
-      syncImmediately: true,
-    });
-
-    return {
-      streamId,
-      content: await reloadContentRecord({
-        pkh,
-        modelId: model.stream_id,
-        streamId,
-      }),
-    };
-  };
-
-  const updateContent = async ({
-    pkh,
-    model,
-    streamId,
-    content,
-    encrypted,
-  }: {
-    pkh: string;
-    model: Model;
-    streamId: string;
-    content: object;
-    encrypted?: object;
-  }) => {
-    const fileType = contentRecord[streamId]?.fileType;
-
-    await runtimeConnector.updateStream({
-      app: appName,
-      streamId,
-      streamContent: {
-        ...content,
-        ...(!model.isPublicDomain &&
-          content &&
-          encrypted &&
-          (fileType === FileType.Private ||
-            fileType === FileType.Datatoken) && {
-          encrypted: JSON.stringify(encrypted),
-        }),
-      },
-      syncImmediately: true,
-    });
-
-    return {
-      streamId,
-      content: await reloadContentRecord({
-        pkh,
-        modelId: model.stream_id,
-        streamId,
-      }),
-    };
-  };
-
-  const unlockContent = async ({
-    streamId,
-  }: {
-    pkh: string;
-    streamId: string;
-  }) => {
-    const content = contentRecord[streamId];
-
-    const res = await runtimeConnector.unlock({
-      app: appName,
-      streamId,
-      indexFileId: content.indexFileId,
-    });
-
-    content.content = res;
-
-    const contentObject = {
-      streamId: content.contentId!,
-      content: content.content,
-    };
-
-    return {
-      streamId,
-      content: updateContentRecord({ contentObject }),
-    };
-  };
-
-  // Only files within the file system can be deleted, and records in contentRecord cannot be deleted
-  const deleteContent = async ({
-    content,
-  }: {
-    pkh: string;
-    content: MirrorFile;
-  }) => {
-    const res = await runtimeConnector.removeFiles({
-      app: appName,
-      indexFileIds: [content.indexFileId],
-    });
-    return res;
-  };
-
-  const editProfileContent = async ({
-    pkh,
-    model,
-    content,
-  }: {
-    pkh: string;
-    model: Model;
-    content: object;
-  }) => {
-    const { streamId, content: mirrorFile } = await createPublicContent({
-      pkh,
-      model,
-    });
-
-    const { streamContent } = await runtimeConnector.updateStream({
-      app: appName,
-      streamId,
-      streamContent: content,
-      syncImmediately: true,
-    });
-
-    mirrorFile.content = streamContent;
-
-    const contentObject = { streamId, content: mirrorFile };
-
-    updateContentRecord({ contentObject, isCreate: true });
-
-    return contentObject;
-  };
-
-  const reloadContentRecord = async ({
+  const _reloadStreamRecord = async ({
     pkh,
     modelId,
     streamId,
@@ -420,47 +361,48 @@ export function useStream(appName: string) {
     modelId: string;
     streamId: string;
   }) => {
-    const contentRecord = await loadContent({ pkh, modelId });
+    const streamRecord = await loadStream({ pkh, modelId });
 
-    setContentRecord(contentRecord);
+    setStreamRecord(streamRecord);
 
-    return contentRecord[streamId];
+    return streamRecord[streamId];
   };
 
-  const updateContentRecord = ({
-    contentObject: { streamId, content },
+  const _updateStreamRecord = ({
+    streamObject: { streamId, stream },
     isCreate,
   }: {
-    contentObject: {
+    streamObject: {
       streamId: string;
-      content: MirrorFile | object;
+      stream: MirrorFile | object;
     };
     isCreate?: boolean;
   }) => {
-    const contentRecordCopy = JSON.parse(
-      JSON.stringify(contentRecord)
+    const streamRecordCopy = JSON.parse(
+      JSON.stringify(streamRecord)
     ) as Record<string, MirrorFile>;
     if (isCreate) {
-      contentRecordCopy[streamId] = content as MirrorFile;
+      streamRecordCopy[streamId] = stream as MirrorFile;
     } else {
-      contentRecordCopy[streamId].content = content as object;
+      streamRecordCopy[streamId].content = stream as object;
     }
 
-    setContentRecord(contentRecordCopy);
+    setStreamRecord(streamRecordCopy);
 
-    return contentRecordCopy[streamId];
+    return streamRecordCopy[streamId];
   };
 
   return {
-    contentRecord,
-    loadContent,
-    createPublicContent,
-    createPrivateContent,
-    createDatatokenContent,
-    monetizeContent,
-    unlockContent,
-    updateContent,
-    updateContentFromPublicToPrivate,
-    editProfileContent,
+    pkh,
+    streamRecord,
+    checkCapibility,
+    createCapibility,
+    loadStream,
+    createPublicStream,
+    createEncryptedStream,
+    createPayableStream,
+    monetizeStream,
+    unlockStream,
+    updateStream,
   };
 }
