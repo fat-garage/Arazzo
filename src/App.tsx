@@ -13,25 +13,15 @@ function App() {
     stream_id: "",
     isPublicDomain: false,
   });
-  // const [profileModel, setProfileModel] = useState<Model>({
-  //   name: "",
-  //   stream_id: "",
-  //   isPublicDomain: false,
-  // });
-
-  // Indicates a certain content to be operated on currently
   const [currentStreamId, setCurrentStreamId] = useState<string>();
   const [publicPost, setPublicPost] = useState<MirrorFile>();
-  const [privatePost, setPrivatePost] = useState<MirrorFile>();
-  const [datatokenPost, setDatatokenPost] = useState<MirrorFile>();
+  const [encryptedPost, setEncryptedPost] = useState<MirrorFile>();
+  const [payablePost, setPayablePost] = useState<MirrorFile>();
+  const [posts, setPosts] = useState<MirrorFile[]>(); // All posts
+  const [updatedPost, setUpdatedPost] = useState<MirrorFile>();
   const [monetizedPost, setMonetizedPost] = useState<MirrorFile>();
   const [unlockedPost, setUnlockedPost] = useState<MirrorFile>();
-  const [updatedPost, setUpdatedPost] = useState<MirrorFile>();
-  const [posts, setPosts] = useState<MirrorFile[]>(); // All posts
-  const [profile, setProfile] = useState<MirrorFile>();
-
-  const { wallet, connectWallet } = useWallet();
-
+  const { wallet } = useWallet();
   const {
     pkh,
     streamRecord,
@@ -51,23 +41,14 @@ function App() {
         (model) => model.name === `${app.createDapp.slug}_post`
       ) as Model
     );
-    // setProfileModel(
-    //   app.createDapp.streamIDs.find(
-    //     (model) => model.name === `${app.createDapp.slug}_profile`
-    //   ) as Model
-    // );
   }, []);
 
-  /*** Identity ***/
   const connect = async () => {
     const pkh = await createCapibility();
-    console.log("pkh=", pkh)
+    console.log("pkh:", pkh)
     return pkh;
   };
 
-  /*** Identity ***/
-
-  /*** Post ***/
   const createPublicPost = async () => {
     const date = new Date().toISOString();
     const res = await createPublicStream({
@@ -85,9 +66,9 @@ function App() {
       },
     });
 
+    console.log("createPublicStream res:", res);
     setCurrentStreamId(res.streamId);
     setPublicPost(res.stream);
-    console.log(res);
   };
 
   const createEncryptedPost = async () => {
@@ -110,9 +91,9 @@ function App() {
         videos: false,
       },
     });
+    console.log("createEncryptedStream res:", res);
     setCurrentStreamId(res.streamId);
-    setPrivatePost(res.stream);
-    console.log(res);
+    setEncryptedPost(res.stream);
   };
 
   const createPayablePost = async () => {
@@ -140,9 +121,9 @@ function App() {
         videos: false,
       },
     });
+    console.log("createPayableStream res:", res);
     setCurrentStreamId(res.streamId);
-    setDatatokenPost(res.content);
-    console.log(res);
+    setPayablePost(res.content);
   };
 
   const loadPosts = async () => {
@@ -150,24 +131,15 @@ function App() {
       pkh,
       modelId: postModel.stream_id,
     });
-    console.log(postRecord);
+    console.log("loadPosts postRecord:", postRecord);
     setPosts(Object.values(postRecord));
-    // Object.entries(postRecord).find(([contentId, content]) => {
-    //   if (
-    //     content.fileType === FileType.Datatoken ||
-    //     content.fileType === FileType.Private
-    //   ) {
-    //     setCurrentStreamId(contentId);
-    //   }
-    // });
   };
-
 
   const updatePost = async () => {
     if (!currentStreamId) {
       return;
     }
-    const content = streamRecord[currentStreamId];
+    const stream = streamRecord[currentStreamId];
 
     const res = await updateStream({
       pkh,
@@ -179,12 +151,9 @@ function App() {
           "https://bafkreidhjbco3nh4uc7wwt5c7auirotd76ch6hlzpps7bwdvgckflp7zmi.ipfs.w3s.link",
         ],
       },
-      ...((content.fileType === FileType.Private ||
-        content.fileType === FileType.Datatoken) && {
-        encrypted: { text: true, images: true, videos: false },
-      }),
+      encrypted: { text: true, images: true, videos: false },
     });
-    console.log(res);
+    console.log("updateStream res:", res);
     setUpdatedPost(res.stream);
   };
 
@@ -206,7 +175,7 @@ function App() {
         videos: false,
       },
     });
-    console.log(res);
+    console.log("monetizeStream res:", res);
     setMonetizedPost(res.content);
   };
 
@@ -218,7 +187,7 @@ function App() {
       pkh,
       streamId: currentStreamId,
     });
-    console.log(res);
+    console.log("unlockStream res:", res);
     setUnlockedPost(res.stream);
   };
 
@@ -234,15 +203,15 @@ function App() {
         </div>
       )}
       <button onClick={createEncryptedPost}>createEncryptedPost</button>
-      {privatePost && (
+      {encryptedPost && (
         <div className="json-view">
-          <ReactJson src={privatePost} collapsed={true} />
+          <ReactJson src={encryptedPost} collapsed={true} />
         </div>
       )}
       <button onClick={createPayablePost}>createPayablePost</button>
-      {datatokenPost && (
+      {payablePost && (
         <div className="json-view">
-          <ReactJson src={datatokenPost} collapsed={true} />
+          <ReactJson src={payablePost} collapsed={true} />
         </div>
       )}
       <div className="red">

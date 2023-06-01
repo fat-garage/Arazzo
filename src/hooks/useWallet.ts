@@ -52,9 +52,9 @@ export function useWallet() {
     return res;
   }
 
-//   const ethereumRequest = async () => {
-//     const res = await runtimeConnector.
-//   }
+  // const ethereumRequest = async () => {
+  //   const res = await runtimeConnector
+  // }
 
   return {
     wallet,

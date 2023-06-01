@@ -150,16 +150,13 @@ export function useStream(appName: string, wallet?: CRYPTO_WALLET) {
   }) => {
     const profileId = await _getProfileId({ pkh, lensNickName });
 
-    const res = await createPublicStream({
-      pkh,
+    const res = await createEncryptedStream({
       model,
-      stream: {
-        ...stream,
-        text: "",
-        images: [],
-        videos: [],
-      },
+      stream,
+      encrypted
     });
+
+    console.log("createEncryptedStream res:", res)
 
     res.stream.content = stream;
 
@@ -211,6 +208,9 @@ export function useStream(appName: string, wallet?: CRYPTO_WALLET) {
     let currentFile: MirrorFile;
     try {
       const res = await runtimeConnector.monetizeFile({
+        app: appName,
+        streamId,
+        indexFileId: mirrorFile.indexFileId,
         datatokenVars: {
           profileId,
           currency,
@@ -271,19 +271,20 @@ export function useStream(appName: string, wallet?: CRYPTO_WALLET) {
   }) => {
     const fileType = streamRecord[streamId]?.fileType;
 
+    if(!model.isPublicDomain && stream && encrypted && fileType === FileType.Public) {
+        for(let key in encrypted) {
+          (encrypted as any)[key] = false;
+        }
+    }
+    const streamContent: StreamContent = {
+      ...stream,
+      encrypted: JSON.stringify(encrypted)
+    }
+
     await runtimeConnector.updateStream({
       app: appName,
       streamId,
-      streamContent: {
-        ...stream,
-        ...(!model.isPublicDomain &&
-          stream &&
-          encrypted &&
-          (fileType === FileType.Private ||
-            fileType === FileType.Datatoken) && {
-          encrypted: JSON.stringify(encrypted),
-        }),
-      },
+      streamContent,
       syncImmediately: true,
     });
 
@@ -320,7 +321,7 @@ export function useStream(appName: string, wallet?: CRYPTO_WALLET) {
 
     return {
       streamId,
-      stream: _updateStreamRecord({streamObject}),
+      stream: _updateStreamRecord({ streamObject }),
     };
   };
 
