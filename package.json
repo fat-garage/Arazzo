@@ -19,7 +19,7 @@
   },
   "homepage": "https://github.com/dataverse-os/create-dataverse-app#readme",
   "dependencies": {
-    "@dataverse/runtime-connector": "1.0.40",
+    "@dataverse/runtime-connector": "1.0.44",
     "buffer": "^6.0.3",
     "chalk": "^4.1.2",
     "convert-yaml": "^2.0.5",
