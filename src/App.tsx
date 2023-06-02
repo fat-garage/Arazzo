@@ -21,7 +21,7 @@ function App() {
   const [updatedPost, setUpdatedPost] = useState<MirrorFile>();
   const [monetizedPost, setMonetizedPost] = useState<MirrorFile>();
   const [unlockedPost, setUnlockedPost] = useState<MirrorFile>();
-  const { wallet } = useWallet();
+  const { wallet, connectWallet, switchNetwork } = useWallet();
   const {
     pkh,
     streamRecord,
@@ -44,8 +44,10 @@ function App() {
   }, []);
 
   const connect = async () => {
+    await connectWallet();
+    await switchNetwork(137);
     const pkh = await createCapability();
-    console.log("pkh:", pkh)
+    console.log("pkh:", pkh);
     return pkh;
   };
 
@@ -183,10 +185,7 @@ function App() {
     if (!currentStreamId) {
       return;
     }
-    const res = await unlockStream({
-      pkh,
-      streamId: currentStreamId,
-    });
+    const res = await unlockStream(currentStreamId);
     console.log("unlockStream res:", res);
     setUnlockedPost(res.stream);
   };

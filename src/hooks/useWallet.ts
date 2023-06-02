@@ -1,5 +1,5 @@
 import { CRYPTO_WALLET, Mode } from "@dataverse/runtime-connector";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Context } from "../main";
 
 export function useWallet() {
@@ -7,6 +7,11 @@ export function useWallet() {
   const [wallet, setWallet] = useState<CRYPTO_WALLET>();
 
   const selectWallet = async () => {
+    const res = await getCurrentWallet();
+    if (res?.wallet) {
+      setWallet(res?.wallet);
+      return res?.wallet;
+    }
     const wallet = await runtimeConnector.selectWallet();
     setWallet(wallet);
     return wallet;
@@ -14,10 +19,10 @@ export function useWallet() {
 
   const connectWallet = async () => {
     let currentWallet;
-    if(!wallet) {
-        currentWallet = await selectWallet();
+    if (!wallet) {
+      currentWallet = await selectWallet();
     } else {
-        currentWallet = wallet;
+      currentWallet = wallet;
     }
     const address = await runtimeConnector.connectWallet(currentWallet);
     return address;
@@ -33,13 +38,10 @@ export function useWallet() {
     return res;
   };
 
-  const sign = async (params: {
-    method: string;
-    params: any[];
-  }) => {
+  const sign = async (params: { method: string; params: any[] }) => {
     const res = await runtimeConnector.sign(params);
     return res;
-  }
+  };
 
   const contractCall = async (params: {
     contractAddress: string;
@@ -50,7 +52,7 @@ export function useWallet() {
   }) => {
     const res = await runtimeConnector.contractCall(params);
     return res;
-  }
+  };
 
   // const ethereumRequest = async () => {
   //   const res = await runtimeConnector
@@ -62,6 +64,6 @@ export function useWallet() {
     getCurrentWallet,
     switchNetwork,
     sign,
-    contractCall
-  }
+    contractCall,
+  };
 }

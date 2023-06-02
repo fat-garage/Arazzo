@@ -87,7 +87,7 @@ export function useStream(appName: string, wallet?: CRYPTO_WALLET) {
       streamId: (existingFile || newFile)!.contentId!,
     };
 
-    _updateStreamRecord({ streamObject, isCreate: true });
+    _updateStreamRecord(streamObject);
 
     return streamObject;
   };
@@ -124,7 +124,7 @@ export function useStream(appName: string, wallet?: CRYPTO_WALLET) {
       streamId: newFile.contentId!,
     };
 
-    _updateStreamRecord({ streamObject, isCreate: true });
+    _updateStreamRecord(streamObject);
 
     return streamObject;
   };
@@ -298,30 +298,24 @@ export function useStream(appName: string, wallet?: CRYPTO_WALLET) {
     };
   };
 
-  const unlockStream = async ({
-    streamId,
-  }: {
-    pkh: string;
-    streamId: string;
-  }) => {
-    const stream = streamRecord[streamId];
+  const unlockStream = async (streamId: string) => {
+    let stream = streamRecord[streamId];
 
     const res = await runtimeConnector.unlock({
       app: appName,
       streamId,
-      indexFileId: stream.indexFileId,
     });
 
-    stream.content = res;
+    stream = res;
 
     const streamObject = {
       streamId: stream.contentId!,
-      stream: stream.content,
+      stream,
     };
 
     return {
       streamId,
-      stream: _updateStreamRecord({ streamObject }),
+      stream: _updateStreamRecord(streamObject),
     };
   };
 
@@ -369,24 +363,15 @@ export function useStream(appName: string, wallet?: CRYPTO_WALLET) {
     return streamRecord[streamId];
   };
 
-  const _updateStreamRecord = ({
-    streamObject: { streamId, stream },
-    isCreate,
-  }: {
-    streamObject: {
-      streamId: string;
-      stream: MirrorFile | object;
-    };
-    isCreate?: boolean;
+  const _updateStreamRecord = ({ streamId, stream }: {
+    streamId: string;
+    stream: MirrorFile | object;
   }) => {
     const streamRecordCopy = JSON.parse(
       JSON.stringify(streamRecord)
     ) as Record<string, MirrorFile>;
-    if (isCreate) {
-      streamRecordCopy[streamId] = stream as MirrorFile;
-    } else {
-      streamRecordCopy[streamId].content = stream as object;
-    }
+
+    streamRecordCopy[streamId] = stream as MirrorFile;
 
     setStreamRecord(streamRecordCopy);
 
