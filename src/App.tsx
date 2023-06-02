@@ -25,7 +25,7 @@ function App() {
   const {
     pkh,
     streamRecord,
-    createCapibility,
+    createCapability,
     loadStream,
     createPublicStream,
     createEncryptedStream,
@@ -44,7 +44,7 @@ function App() {
   }, []);
 
   const connect = async () => {
-    const pkh = await createCapibility();
+    const pkh = await createCapability();
     console.log("pkh:", pkh)
     return pkh;
   };

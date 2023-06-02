@@ -10,13 +10,13 @@ export function useStream(appName: string, wallet?: CRYPTO_WALLET) {
   const [pkh, setPkh] = useState("");
   const [streamRecord, setStreamRecord] = useState<Record<string, MirrorFile>>({});
 
-  const checkCapibility = async () => {
-    const res = await runtimeConnector.checkCapibility(appName);
+  const checkCapability = async () => {
+    const res = await runtimeConnector.checkCapability(appName);
     return res;
   };
 
-  const createCapibility = async () => {
-    const currentPkh = await runtimeConnector.createCapibility({
+  const createCapability = async () => {
+    const currentPkh = await runtimeConnector.createCapability({
       wallet,
       app: appName
     })
@@ -396,8 +396,8 @@ export function useStream(appName: string, wallet?: CRYPTO_WALLET) {
   return {
     pkh,
     streamRecord,
-    checkCapibility,
-    createCapibility,
+    checkCapability,
+    createCapability,
     loadStream,
     createPublicStream,
     createEncryptedStream,
