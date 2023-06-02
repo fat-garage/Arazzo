@@ -22,6 +22,7 @@
     "@ant-design/icons": "^5.0.1",
     "@dataverse/runtime-connector": "1.0.30",
     "@tiptap/extension-highlight": "^2.0.3",
+    "@tiptap/extension-link": "^2.0.3",
     "@tiptap/extension-placeholder": "^2.0.3",
     "@tiptap/pm": "^2.0.3",
     "@tiptap/react": "^2.0.3",

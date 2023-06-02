@@ -8,6 +8,8 @@ import React, {
 
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
+import Link from "@tiptap/extension-link";
+
 import EditorMenu from "./EditorMenu";
 import Highlight from "@tiptap/extension-highlight";
 import Placeholder from "@tiptap/extension-placeholder";
@@ -44,6 +46,7 @@ const Editor: ForwardRefRenderFunction<EditorHandle, Props> = (
     extensions: [
       StarterKit,
       Highlight,
+      Link,
       Placeholder.configure({
         placeholder: "Start typing here...",
       }),
