@@ -4,11 +4,11 @@ import {
   Currency,
   MirrorFile,
   CRYPTO_WALLET,
+  StreamContent
 } from "@dataverse/runtime-connector";
 import { Context } from "../main";
 import { Model } from "../types";
 import { getAddressFromPkh } from "../utils";
-import { StreamContent } from "@dataverse/runtime-connector/dist/cjs/types/data-models/types";
 
 export function useStream(appName: string, wallet?: CRYPTO_WALLET) {
   const { runtimeConnector } = useContext(Context);
