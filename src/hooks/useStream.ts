@@ -1,5 +1,10 @@
 import { useState, useContext } from "react";
-import { FileType, Currency, MirrorFile, CRYPTO_WALLET } from "@dataverse/runtime-connector";
+import {
+  FileType,
+  Currency,
+  MirrorFile,
+  CRYPTO_WALLET,
+} from "@dataverse/runtime-connector";
 import { Context } from "../main";
 import { Model } from "../types";
 import { getAddressFromPkh } from "../utils";
@@ -8,7 +13,9 @@ import { StreamContent } from "@dataverse/runtime-connector/dist/cjs/types/data-
 export function useStream(appName: string, wallet?: CRYPTO_WALLET) {
   const { runtimeConnector } = useContext(Context);
   const [pkh, setPkh] = useState("");
-  const [streamRecord, setStreamRecord] = useState<Record<string, MirrorFile>>({});
+  const [streamRecord, setStreamRecord] = useState<Record<string, MirrorFile>>(
+    {}
+  );
 
   const checkCapability = async () => {
     const res = await runtimeConnector.checkCapability(appName);
@@ -18,8 +25,8 @@ export function useStream(appName: string, wallet?: CRYPTO_WALLET) {
   const createCapability = async () => {
     const currentPkh = await runtimeConnector.createCapability({
       wallet,
-      app: appName
-    })
+      app: appName,
+    });
 
     setPkh(currentPkh);
     return currentPkh;
@@ -40,7 +47,7 @@ export function useStream(appName: string, wallet?: CRYPTO_WALLET) {
       });
     } else {
       streams = await runtimeConnector.loadStreamsBy({
-        modelId
+        modelId,
       });
     }
     setStreamRecord(streams);
@@ -55,8 +62,8 @@ export function useStream(appName: string, wallet?: CRYPTO_WALLET) {
     model: Model;
     stream?: object;
   }) => {
-    console.log("model:", model)
-    console.log("stream:", stream)
+    console.log("model:", model);
+    console.log("stream:", stream);
     let encrypted = {} as any;
     if (stream && Object.keys(stream).length > 0) {
       Object.keys(stream).forEach((key) => {
@@ -68,14 +75,13 @@ export function useStream(appName: string, wallet?: CRYPTO_WALLET) {
       ...stream,
       ...(!model.isPublicDomain &&
         stream && {
-        encrypted: JSON.stringify(encrypted),
-      }),
-    }
-    const { newFile, existingFile } =
-      await runtimeConnector.createStream({
-        modelId: model.stream_id,
-        streamContent
-      });
+          encrypted: JSON.stringify(encrypted),
+        }),
+    };
+    const { newFile, existingFile } = await runtimeConnector.createStream({
+      modelId: model.stream_id,
+      streamContent,
+    });
 
     if (!newFile && !existingFile) {
       throw "Failed to create stream";
@@ -106,12 +112,11 @@ export function useStream(appName: string, wallet?: CRYPTO_WALLET) {
       ...(stream && {
         encrypted: JSON.stringify(encrypted),
       }),
-    }
-    const { newFile } =
-      await runtimeConnector.createStream({
-        modelId: model.stream_id,
-        streamContent
-      });
+    };
+    const { newFile } = await runtimeConnector.createStream({
+      modelId: model.stream_id,
+      streamContent,
+    });
 
     if (!newFile) {
       throw "Failed to create content";
@@ -153,10 +158,10 @@ export function useStream(appName: string, wallet?: CRYPTO_WALLET) {
     const res = await createEncryptedStream({
       model,
       stream,
-      encrypted
+      encrypted,
     });
 
-    console.log("createEncryptedStream res:", res)
+    console.log("createEncryptedStream res:", res);
 
     res.stream.content = stream;
 
@@ -206,6 +211,7 @@ export function useStream(appName: string, wallet?: CRYPTO_WALLET) {
 
     let streamContent: StreamContent;
     let currentFile: MirrorFile;
+
     try {
       const res = await runtimeConnector.monetizeFile({
         app: appName,
@@ -216,21 +222,12 @@ export function useStream(appName: string, wallet?: CRYPTO_WALLET) {
           currency,
           amount,
           collectLimit,
-        }
+        },
       });
       streamContent = res.streamContent!;
       currentFile = res.currentFile;
     } catch (error: any) {
       console.log(error);
-      if (
-        error !==
-        "networkConfigurationId undefined does not match a configured networkConfiguration"
-      ) {
-        await runtimeConnector.removeFiles({
-          app: appName,
-          indexFileIds: [mirrorFile.indexFileId]
-        })
-      }
       throw error;
     }
 
@@ -271,15 +268,20 @@ export function useStream(appName: string, wallet?: CRYPTO_WALLET) {
   }) => {
     const fileType = streamRecord[streamId]?.fileType;
 
-    if(!model.isPublicDomain && stream && encrypted && fileType === FileType.Public) {
-        for(let key in encrypted) {
-          (encrypted as any)[key] = false;
-        }
+    if (
+      !model.isPublicDomain &&
+      stream &&
+      encrypted &&
+      fileType === FileType.Public
+    ) {
+      for (let key in encrypted) {
+        (encrypted as any)[key] = false;
+      }
     }
     const streamContent: StreamContent = {
       ...stream,
-      encrypted: JSON.stringify(encrypted)
-    }
+      encrypted: JSON.stringify(encrypted),
+    };
 
     await runtimeConnector.updateStream({
       app: appName,
@@ -346,7 +348,6 @@ export function useStream(appName: string, wallet?: CRYPTO_WALLET) {
     return profileId;
   };
 
-
   const _reloadStreamRecord = async ({
     pkh,
     modelId,
@@ -363,13 +364,17 @@ export function useStream(appName: string, wallet?: CRYPTO_WALLET) {
     return streamRecord[streamId];
   };
 
-  const _updateStreamRecord = ({ streamId, stream }: {
+  const _updateStreamRecord = ({
+    streamId,
+    stream,
+  }: {
     streamId: string;
     stream: MirrorFile | object;
   }) => {
-    const streamRecordCopy = JSON.parse(
-      JSON.stringify(streamRecord)
-    ) as Record<string, MirrorFile>;
+    const streamRecordCopy = JSON.parse(JSON.stringify(streamRecord)) as Record<
+      string,
+      MirrorFile
+    >;
 
     streamRecordCopy[streamId] = stream as MirrorFile;
 
