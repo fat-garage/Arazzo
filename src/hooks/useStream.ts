@@ -137,6 +137,7 @@ export function useStream(appName: string, wallet?: CRYPTO_WALLET) {
   const createPayableStream = async ({
     pkh,
     model,
+    profileId,
     stream,
     lensNickName,
     currency,
@@ -146,6 +147,7 @@ export function useStream(appName: string, wallet?: CRYPTO_WALLET) {
   }: {
     pkh: string;
     model: Model;
+    profileId?: string;
     stream: object;
     lensNickName?: string;
     currency: Currency;
@@ -153,7 +155,9 @@ export function useStream(appName: string, wallet?: CRYPTO_WALLET) {
     collectLimit: number;
     encrypted: object;
   }) => {
-    const profileId = await _getProfileId({ pkh, lensNickName });
+    if (!profileId) {
+      profileId = await _getProfileId({ pkh, lensNickName });
+    }
 
     const res = await createEncryptedStream({
       model,
