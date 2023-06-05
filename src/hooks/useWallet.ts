@@ -1,4 +1,4 @@
-import { CRYPTO_WALLET, Mode } from "@dataverse/runtime-connector";
+import { CRYPTO_WALLET, Mode, SignMethod } from "@dataverse/runtime-connector";
 import { useContext, useEffect, useState } from "react";
 import { Context } from "../main";
 
@@ -38,7 +38,7 @@ export function useWallet() {
     return res;
   };
 
-  const sign = async (params: { method: string; params: any[] }) => {
+  const sign = async (params: { method: SignMethod; params: any[] }) => {
     const res = await runtimeConnector.sign(params);
     return res;
   };
