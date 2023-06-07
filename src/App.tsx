@@ -1,18 +1,12 @@
 import "./App.css";
-import React, { useState, useEffect } from "react";
-import { Currency, FileType, MirrorFile } from "@dataverse/runtime-connector";
-import app from "../output/app.json";
+import React, { useState, useContext } from "react";
+import { Currency, MirrorFile } from "@dataverse/runtime-connector";
 import { useWallet, useStream } from "./hooks";
-import { Model } from "./types";
 import ReactJson from "react-json-view";
+import { Context } from "./context";
 
 function App() {
-  const postVersion = "0.0.1";
-  const [postModel, setPostModel] = useState<Model>({
-    name: "",
-    stream_id: "",
-    isPublicDomain: false,
-  });
+  const {appVersion, postModel} = useContext(Context);
   const [currentStreamId, setCurrentStreamId] = useState<string>();
   const [publicPost, setPublicPost] = useState<MirrorFile>();
   const [encryptedPost, setEncryptedPost] = useState<MirrorFile>();
@@ -33,15 +27,7 @@ function App() {
     monetizeStream,
     unlockStream,
     updateStream,
-  } = useStream(app.createDapp.name, wallet);
-
-  useEffect(() => {
-    setPostModel(
-      app.createDapp.streamIDs.find(
-        (model) => model.name === `${app.createDapp.slug}_post`
-      ) as Model
-    );
-  }, []);
+  } = useStream(wallet);
 
   const connect = async () => {
     await connectWallet();
@@ -57,7 +43,7 @@ function App() {
       pkh,
       model: postModel,
       stream: {
-        appVersion: postVersion,
+        appVersion,
         text: "hello",
         images: [
           "https://bafkreib76wz6wewtkfmp5rhm3ep6tf4xjixvzzyh64nbyge5yhjno24yl4.ipfs.w3s.link",
@@ -78,7 +64,7 @@ function App() {
     const res = await createEncryptedStream({
       model: postModel,
       stream: {
-        appVersion: postVersion,
+        appVersion,
         text: "hello",
         images: [
           "https://bafkreib76wz6wewtkfmp5rhm3ep6tf4xjixvzzyh64nbyge5yhjno24yl4.ipfs.w3s.link",
@@ -104,7 +90,7 @@ function App() {
       pkh,
       model: postModel,
       stream: {
-        appVersion: postVersion,
+        appVersion,
         text: "metaverse",
         images: [
           "https://bafkreidhjbco3nh4uc7wwt5c7auirotd76ch6hlzpps7bwdvgckflp7zmi.ipfs.w3s.link/",
