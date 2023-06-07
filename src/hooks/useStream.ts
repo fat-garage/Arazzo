@@ -8,7 +8,7 @@ import {
 } from "@dataverse/runtime-connector";
 import { Context } from "../context";
 import { Model } from "../types";
-import { getAddressFromPkh } from "../utils";
+import { getAddressFromDid } from "../utils";
 
 export function useStream(wallet?: CRYPTO_WALLET) {
   const { runtimeConnector, output } = useContext(Context);
@@ -333,7 +333,7 @@ export function useStream(wallet?: CRYPTO_WALLET) {
     lensNickName?: string;
   }) => {
     const lensProfiles = await runtimeConnector.getProfiles(
-      getAddressFromPkh(pkh)
+      getAddressFromDid(pkh)
     );
 
     let profileId;

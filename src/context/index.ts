@@ -1,7 +1,7 @@
 import { Extension, RuntimeConnector } from "@dataverse/runtime-connector";
 import { createContext } from "react";
 import { Model, Output } from "../types";
-import { getOutput, getPostModelFromOutput } from "../utils";
+import { getOutput, getPostModelFromOutput } from "../utils/model";
 
 interface ContextType {
   runtimeConnector: RuntimeConnector;
