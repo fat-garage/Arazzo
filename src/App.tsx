@@ -1,26 +1,31 @@
 import "./App.css";
 import React, { useState, useContext } from "react";
-import { Currency, MirrorFile } from "@dataverse/runtime-connector";
+import {
+  Currency,
+  MirrorFile,
+  StreamContent,
+} from "@dataverse/runtime-connector";
 import { useWallet, useStream } from "./hooks";
 import ReactJson from "react-json-view";
 import { Context } from "./context";
+import { StreamRecord, StreamsRecord } from "./types";
 
 function App() {
-  const {appVersion, postModel} = useContext(Context);
+  const { appVersion, postModel } = useContext(Context);
   const [currentStreamId, setCurrentStreamId] = useState<string>();
-  const [publicPost, setPublicPost] = useState<MirrorFile>();
-  const [encryptedPost, setEncryptedPost] = useState<MirrorFile>();
-  const [payablePost, setPayablePost] = useState<MirrorFile>();
-  const [posts, setPosts] = useState<MirrorFile[]>(); // All posts
-  const [updatedPost, setUpdatedPost] = useState<MirrorFile>();
-  const [monetizedPost, setMonetizedPost] = useState<MirrorFile>();
-  const [unlockedPost, setUnlockedPost] = useState<MirrorFile>();
+  const [publicPost, setPublicPost] = useState<StreamRecord>();
+  const [encryptedPost, setEncryptedPost] = useState<StreamRecord>();
+  const [payablePost, setPayablePost] = useState<StreamRecord>();
+  const [posts, setPosts] = useState<StreamRecord[]>(); // All posts
+  const [updatedPost, setUpdatedPost] = useState<StreamRecord>();
+  const [monetizedPost, setMonetizedPost] = useState<StreamRecord>();
+  const [unlockedPost, setUnlockedPost] = useState<StreamRecord>();
   const { wallet, connectWallet, switchNetwork } = useWallet();
   const {
     pkh,
-    streamRecord,
+    streamsRecord,
     createCapability,
-    loadStream,
+    loadStreams,
     createPublicStream,
     createEncryptedStream,
     createPayableStream,
@@ -39,7 +44,7 @@ function App() {
 
   const createPublicPost = async () => {
     const date = new Date().toISOString();
-    const res = await createPublicStream({
+    const {streamId, ...streamRecord} = await createPublicStream({
       pkh,
       model: postModel,
       stream: {
@@ -54,14 +59,13 @@ function App() {
       },
     });
 
-    console.log("createPublicStream res:", res);
-    setCurrentStreamId(res.streamId);
-    setPublicPost(res.stream);
+    setCurrentStreamId(streamId);
+    setPublicPost(streamRecord as StreamRecord);
   };
 
   const createEncryptedPost = async () => {
     const date = new Date().toISOString();
-    const res = await createEncryptedStream({
+    const { streamId, ...streamRecord } = await createEncryptedStream({
       model: postModel,
       stream: {
         appVersion,
@@ -79,14 +83,14 @@ function App() {
         videos: false,
       },
     });
-    console.log("createEncryptedStream res:", res);
-    setCurrentStreamId(res.streamId);
-    setEncryptedPost(res.stream);
+
+    setCurrentStreamId(streamId);
+    setEncryptedPost(streamRecord as StreamRecord);
   };
 
   const createPayablePost = async () => {
     const date = new Date().toISOString();
-    const res = await createPayableStream({
+    const { streamId, ...streamRecord } = await createPayableStream({
       pkh,
       model: postModel,
       stream: {
@@ -109,13 +113,13 @@ function App() {
         videos: false,
       },
     });
-    console.log("createPayableStream res:", res);
-    setCurrentStreamId(res.streamId);
-    setPayablePost(res.content);
+
+    setCurrentStreamId(streamId);
+    setPayablePost(streamRecord as StreamRecord);
   };
 
   const loadPosts = async () => {
-    const postRecord = await loadStream({
+    const postRecord = await loadStreams({
       pkh,
       modelId: postModel.stream_id,
     });
@@ -127,10 +131,7 @@ function App() {
     if (!currentStreamId) {
       return;
     }
-    const stream = streamRecord[currentStreamId];
-
-    const res = await updateStream({
-      pkh,
+    const {streamId, ...streamRecord} = await updateStream({
       model: postModel,
       streamId: currentStreamId,
       stream: {
@@ -141,39 +142,34 @@ function App() {
       },
       encrypted: { text: true, images: true, videos: false },
     });
-    console.log("updateStream res:", res);
-    setUpdatedPost(res.stream);
+
+    setUpdatedPost(streamRecord as StreamRecord);
   };
 
   const monetizePost = async () => {
     if (!currentStreamId) {
       return;
     }
-    const res = await monetizeStream({
+    const {streamId, ...streamRecord} = await monetizeStream({
       pkh,
-      model: postModel,
+      modelId: postModel.stream_id,
       streamId: currentStreamId,
       lensNickName: "jackieth", //Only supports lower case characters, numbers, must be minimum of 5 length and maximum of 26 length
       currency: Currency.WMATIC,
       amount: 0.0001,
       collectLimit: 1000,
-      encrypted: {
-        text: true,
-        images: true,
-        videos: false,
-      },
     });
-    console.log("monetizeStream res:", res);
-    setMonetizedPost(res.content);
+
+    setMonetizedPost(streamRecord as StreamRecord);
   };
 
   const unlockPost = async () => {
     if (!currentStreamId) {
       return;
     }
-    const res = await unlockStream(currentStreamId);
-    console.log("unlockStream res:", res);
-    setUnlockedPost(res.stream);
+    const {streamId, ...streamRecord} = await unlockStream(currentStreamId);
+
+    setUnlockedPost(streamRecord as StreamRecord);
   };
 
   return (
