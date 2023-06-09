@@ -1,14 +1,10 @@
 import "./App.css";
 import React, { useState, useContext } from "react";
-import {
-  Currency,
-  MirrorFile,
-  StreamContent,
-} from "@dataverse/runtime-connector";
+import { Currency } from "@dataverse/runtime-connector";
 import { useWallet, useStream } from "./hooks";
 import ReactJson from "react-json-view";
 import { Context } from "./context";
-import { StreamRecord, StreamsRecord } from "./types";
+import { StreamRecord } from "./types";
 
 function App() {
   const { appVersion, postModel } = useContext(Context);
@@ -20,10 +16,9 @@ function App() {
   const [updatedPost, setUpdatedPost] = useState<StreamRecord>();
   const [monetizedPost, setMonetizedPost] = useState<StreamRecord>();
   const [unlockedPost, setUnlockedPost] = useState<StreamRecord>();
-  const { wallet, connectWallet, switchNetwork } = useWallet();
+  const { connectWallet } = useWallet();
   const {
     pkh,
-    streamsRecord,
     createCapability,
     loadStreams,
     createPublicStream,
@@ -32,19 +27,18 @@ function App() {
     monetizeStream,
     unlockStream,
     updateStream,
-  } = useStream(wallet);
+  } = useStream();
 
   const connect = async () => {
-    await connectWallet();
-    await switchNetwork(137);
-    const pkh = await createCapability();
+    const { wallet } = await connectWallet();
+    const pkh = await createCapability(wallet);
     console.log("pkh:", pkh);
     return pkh;
   };
 
   const createPublicPost = async () => {
     const date = new Date().toISOString();
-    const {streamId, ...streamRecord} = await createPublicStream({
+    const { streamId, ...streamRecord } = await createPublicStream({
       pkh,
       model: postModel,
       stream: {
@@ -131,7 +125,7 @@ function App() {
     if (!currentStreamId) {
       return;
     }
-    const {streamId, ...streamRecord} = await updateStream({
+    const { streamId, ...streamRecord } = await updateStream({
       model: postModel,
       streamId: currentStreamId,
       stream: {
@@ -150,7 +144,7 @@ function App() {
     if (!currentStreamId) {
       return;
     }
-    const {streamId, ...streamRecord} = await monetizeStream({
+    const { streamId, ...streamRecord } = await monetizeStream({
       pkh,
       modelId: postModel.stream_id,
       streamId: currentStreamId,
@@ -167,7 +161,7 @@ function App() {
     if (!currentStreamId) {
       return;
     }
-    const {streamId, ...streamRecord} = await unlockStream(currentStreamId);
+    const { streamId, ...streamRecord } = await unlockStream(currentStreamId);
 
     setUnlockedPost(streamRecord as StreamRecord);
   };
