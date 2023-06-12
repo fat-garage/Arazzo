@@ -41,7 +41,7 @@ you can see the demo app running at http://localhost:5173.
 
 ## Publish Your App
 
-Set your dApp private key in `.env` and open `dataverse.config.js` to check configurable variables:
+Set your dApp private key in `.env` and open `dataverse.config.ts` to check configurable variables:
 
 ```typescript
   export const config = {
@@ -63,6 +63,7 @@ models: [
     {
       isPublicDomain: false,
       schemaName: "post.graphql",
+      encryptable: ["text", "images", "videos"],
     },
     {
       isPublicDomain: true,
@@ -93,15 +94,16 @@ We provide simple hooks & components in `src/`. Now run the frontend to interact
 
   // Event streams
   const {
-    contentRecord: postContentRecord,
-    loadContent: loadPostContent,
-    createPublicContent,
-    createPrivateContent,
-    createDatatokenContent,
-    monetizeContent,
-    updateContent,
-    unlockContent,
-  } = useContent();
+    pkh,
+    createCapability,
+    loadStreams,
+    createPublicStream,
+    createEncryptedStream,
+    createPayableStream,
+    monetizeStream,
+    unlockStream,
+    updateStream,
+  } = useStream();
 ```
 
 # Contributing
