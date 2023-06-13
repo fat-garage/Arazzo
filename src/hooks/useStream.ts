@@ -95,10 +95,12 @@ export function useStream() {
     model,
     stream,
     encrypted,
+    requireUpdateStreamRecord = true,
   }: {
     model: Model;
     stream: object;
     encrypted: object;
+    requireUpdateStreamRecord?: boolean;
   }) => {
     const inputStreamContent = {
       ...stream,
@@ -113,6 +115,14 @@ export function useStream() {
       });
 
     if (streamContent) {
+      if (requireUpdateStreamRecord) {
+        return _updateStreamRecord({
+          pkh,
+          modelId,
+          streamId,
+          streamContent,
+        });
+      }
       return {
         streamId,
         app: output.createDapp.name,
@@ -154,6 +164,7 @@ export function useStream() {
       model,
       stream,
       encrypted,
+      requireUpdateStreamRecord: false,
     });
 
     return monetizeStream({
