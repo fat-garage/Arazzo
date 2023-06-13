@@ -42,9 +42,9 @@ export function useWallet() {
     return res;
   };
 
-  const connectPkpWallet = async () => {
-    const { address } = await runtimeConnector.connectPKPWallet();
-    return address;
+  const getPKP = async () => {
+    const res = await runtimeConnector.getPKP();
+    return res;
   };
 
   const executeLitAction = async (params: {
@@ -62,7 +62,7 @@ export function useWallet() {
     sign,
     contractCall,
     ethereumRequest,
-    connectPkpWallet,
+    getPKP,
     executeLitAction,
   };
 }
