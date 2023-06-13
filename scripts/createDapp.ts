@@ -54,19 +54,19 @@ export const createDapp = async () => {
 
   const fileSystemModels = await getFileSystemModels(params.slug);
 
-  const schemas = Object.values(models);
-  const msgObj = {
-    Operation: "I want to create a DataverseOS app.",
-    Slug: params.slug,
-    Ceramic: params.ceramicUrl,
-    Models: schemas.concat(fileSystemModels),
-  };
-
   params.models.forEach((model) => {
     model.schema = models[model.schemaName];
   });
 
+  const msgObj = {
+    Operation: "I want to create a DataverseOS app.",
+    Slug: params.slug,
+    Ceramic: params.ceramicUrl,
+    Models: params.models.map((model) => model.schema).concat(fileSystemModels),
+  };
+
   const msg = convertToYaml(msgObj);
+
   const signedMsg = await signMessage(msg!);
 
   const variables: CreateDappProps = {
