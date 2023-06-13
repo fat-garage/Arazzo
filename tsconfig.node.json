@@ -12,7 +12,8 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "moduleResolution": "node",
-    "outDir": "scripts/build"
+    "outDir": "scripts/build",
+    "noImplicitAny": false
   },
   "include": ["scripts/*"],
   "exclude": ["node_modules"]

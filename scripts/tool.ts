@@ -1,18 +1,45 @@
 import fs from "fs";
 import path from "path";
+import crlf from "crlf";
 
-export function readModels() {
+export async function readModels() {
   const res = fs.readdirSync(`${process.cwd()}/models`);
   const schemas: Record<string, string> = {};
-  res.forEach((fileName) => {
-    const filePath = path.resolve(`${process.cwd()}/models`, fileName);
-    if (fs.statSync(filePath).isFile()) {
-      schemas[fileName] = fs
-        .readFileSync(filePath, { encoding: "utf8" })
-        //@ts-ignore
-        .replaceAll("\n", "");
-    }
-  });
+
+  await Promise.all(
+    res.map(async (fileName) => {
+      if (fileName === "fs") {
+        return;
+      }
+      const __modelsDirname = `${process.cwd()}/models`;
+
+      const endingType = await new Promise((resolve) => {
+        crlf.get(
+          `${__modelsDirname}/${fileName}`,
+          null,
+          function (err, endingType) {
+            resolve(endingType);
+          }
+        );
+      });
+
+      if (endingType === "CRLF") {
+        await new Promise((resolve) => {
+          crlf.set(`${__modelsDirname}/${fileName}`, "LF", function () {
+            resolve("");
+          });
+        });
+      }
+
+      const filePath = path.resolve(__modelsDirname, fileName);
+      if (fs.statSync(filePath).isFile()) {
+        schemas[fileName] = fs
+          .readFileSync(filePath, { encoding: "utf8" })
+          //@ts-ignore
+          .replaceAll("\n", "");
+      }
+    })
+  );
   return schemas;
 }
 

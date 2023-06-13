@@ -39,7 +39,7 @@ const getFileSystemModels = async (slug: string) => {
 };
 
 export const createDapp = async () => {
-  const models = readModels();
+  const models = await readModels();
   const params = config as CreateDappProps;
 
   if (!params.slug) {
