@@ -35,7 +35,7 @@ pnpm install
 you can see the demo app running at http://localhost:5173.
 <p align="center">
 <a href=" " target="_blank">
-<img src="https://i.imgur.com/xaLxrHh.png" width="300" alt="Dataverse logo">
+<img src="https://s2.loli.net/2023/06/13/9B7TYLgSbcf1xHy.png" width="300" alt="Dataverse logo">
 </a >
 </p >
 
@@ -44,7 +44,7 @@ you can see the demo app running at http://localhost:5173.
 Set your dApp private key in `.env` and open `dataverse.config.ts` to check configurable variables:
 
 ```typescript
-  export const config = {
+export const config = {
   slug: ...,
   name: ...,
   logo: ...,
@@ -88,9 +88,8 @@ This will deploy models to ceramic node you specify, and register data resources
 We provide simple hooks & components in `src/`. Now run the frontend to interact with your dApp logic: 
 
 ```typescript
-  // Connect user's identity
-  const { did, connectIdentity } = useIdentity();
-  const did = await connectIdentity();
+  // Connect user's wallet
+  const { connectWallet } = useWallet();
 
   // Event streams
   const {
