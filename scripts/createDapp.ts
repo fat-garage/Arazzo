@@ -34,7 +34,7 @@ const getFileSystemModels = async (slug: string) => {
     // console.log("getDefaultModels Models: ", res.getFileSystemModels);
     return res.getFileSystemModels;
   } catch (error: any) {
-    console.log(error?.response?.errors?.[0] ?? error);
+    throw error?.response?.errors?.[0] ?? error;
   }
 };
 
@@ -52,7 +52,13 @@ export const createDapp = async () => {
     return;
   }
 
-  const fileSystemModels = await getFileSystemModels(params.slug);
+  let fileSystemModels;
+  try {
+    fileSystemModels = await getFileSystemModels(params.slug);
+  } catch (error) {
+    console.log(error);
+    return;
+  }
 
   params.models.forEach((model) => {
     model.schema = models[model.schemaName];
