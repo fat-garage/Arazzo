@@ -3,13 +3,13 @@ import { Model, Output } from "../types";
 
 export function  getPostModel() {
   return app.createDapp.streamIDs.find(
-    (model) => model.name === `${app.createDapp.name}_post`
+    (model) => model.name === `${app.createDapp.slug}_post`
   ) as Model;
 }
 
 export function getIndexFilesModel() {
   return app.createDapp.streamIDs.find(
-    (model) => model.name === `${app.createDapp.name}_indexFiles`
+    (model) => model.name === `${app.createDapp.slug}_indexFiles`
   ) as Model;
 }
 
