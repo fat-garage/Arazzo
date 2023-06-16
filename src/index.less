@@ -1,0 +1,130 @@
+.multi-ellipsis(@lines) {
+  display: -webkit-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-line-clamp: @lines;
+
+  /* autoprefixer: ignore next */
+  -webkit-box-orient: vertical;
+}
+
+.ellipsis() {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:root {
+  // font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+  //   Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  --background-color: #fffff0;
+  --sidebar-color: #efefe0;
+}
+
+body {
+  background: var(--background-color);
+}
+
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  font-family: Consolas, Menlo, Monaco, "Courier New", monospace;
+}
+
+.app-container {
+  height: 100vh;
+  display: flex;
+}
+
+.app-sidebar {
+  width: 300px;
+  background: var(--background-color);
+  border-right: 1px solid rgba(0, 0, 0, 0.075);
+
+  .sidebar-header {
+    display: flex;
+    align-items: center;
+    padding: 0 8px 0 16px;
+    height: 50px;
+    align-items: center;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.075);
+    justify-content: space-between;
+    background: var(--background-color);
+
+    .logo-wrapper {
+      display: flex;
+      align-items: center;
+      .logo {
+        width: 22px;
+      }
+
+      .app-name {
+        font-weight: bold;
+        margin-left: 8px;
+        font-size: 14px;
+      }
+    }
+
+    .remix {
+      fill: currentColor;
+      height: 20px;
+      width: 20px;
+    }
+  }
+
+  .sidebar-content {
+    overflow: auto;
+    padding: 4px 0;
+    .post-list {
+      .post-item {
+        cursor: pointer;
+        padding: 10px 16px;
+        &:hover {
+          background-color: var(--sidebar-color);
+        }
+        &.is-active {
+          background-color: var(--sidebar-color);
+        }
+
+        .post-item-title {
+          font-weight: bold;
+          .ellipsis();
+        }
+
+        .post-item-content {
+          .multi-ellipsis(1);
+          font-size: 13px;
+          color: #969799;
+          margin: 4px 0;
+        }
+
+        .post-item-created {
+          color: #969799;
+          font-size: 13px;
+        }
+      }
+    }
+  }
+}
+
+.app-content {
+  flex: 1;
+  padding: 0 20px;
+  overflow-y: auto;
+
+  .app-content-header {
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .header-left {
+      width: 100px;
+      font-size: 13px;
+      color: #666;
+    }
+  }
+}

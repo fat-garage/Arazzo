@@ -372,6 +372,11 @@ export function useStream() {
     };
   };
 
+  const loadStream = async (streamId) => {
+    const stream = await runtimeConnector.loadStream(streamId);
+    return stream;
+  }
+
   return {
     pkh,
     streamsRecord,
@@ -384,5 +389,6 @@ export function useStream() {
     monetizeStream,
     unlockStream,
     updateStream,
+    loadStream,
   };
 }

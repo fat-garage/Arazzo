@@ -1,0 +1,38 @@
+@keyframes move {
+    from {
+        opacity: 0.5;
+        transform: translateX(100px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.message-box {
+    position: fixed;
+    top: 40px;
+    right: 50px;
+    z-index: 10001;
+    background: #111;
+    border-radius: 8px;
+    animation: move 0.3s linear;
+
+    .message-content {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 120px;
+        padding: 16px 24px;
+        font-size: 15px;
+        color: white;
+        border-radius: 8px;
+        background: linear-gradient(109.41deg, #6734f733 13.03%, rgba(163, 162, 180, 0.2) 90.68%),rgba(123, 238, 104, 0.3);
+        box-shadow: inset -6px -6px 12px rgba(255, 255, 255, 0.08),
+        inset 6px 6px 12px rgba(0, 0, 0, 0.18);
+    
+        a {
+            color: white;
+        }
+    }
+}
