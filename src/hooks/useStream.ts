@@ -4,6 +4,7 @@ import {
   Currency,
   WALLET,
   StreamContent,
+  DecryptionConditions,
 } from "@dataverse/runtime-connector";
 import { Context } from "../context";
 import { Model, StreamsRecord } from "../types";
@@ -190,6 +191,7 @@ export function useStream() {
     currency,
     amount,
     collectLimit,
+    decryptionConditions
   }: {
     pkh: string;
     modelId: string;
@@ -200,6 +202,7 @@ export function useStream() {
     currency: Currency;
     amount: number;
     collectLimit: number;
+    decryptionConditions?: DecryptionConditions;
   }) => {
     try {
       if (!profileId) {
@@ -218,6 +221,7 @@ export function useStream() {
             amount,
             collectLimit,
           },
+          decryptionConditions,
         });
       if (updatedStreamContent) {
         return _updateStreamRecord({
