@@ -37,21 +37,22 @@ function PostEditor() {
     updateContent,
     deleteContent: deletePostContent,
     contentRecord,
-  } = useContent(app.createDapp.name);
-  const [postModel, setPostModel] = useState<Model>({
-    name: "",
-    stream_id: "",
-    isPublicDomain: false,
-  });
+  } = useContent();
+  const [postModel, setPostModel] = useState<Model>();
   const [publishLoading, setPublishLoading] = useState(false);
   const [connectLoading, setConnectLoading] = useState(false);
 
   useEffect(() => {
-    setPostModel(
-      app.createDapp.streamIDs.find(
-        (model) => model.name === `${app.createDapp.slug}_post`
-      ) as Model
+    const { streams, ...rest } = app.models.find(
+      (model) => model.modelName === "post"
     );
+
+    const stream = streams.find((stream) => stream.latest && stream);
+
+    setPostModel({
+      ...rest,
+      ...stream,
+    });
 
     const storeDID = storage.getItem("DID");
     if (!storeDID) {
@@ -80,20 +81,14 @@ function PostEditor() {
 
       const response = await loadPostContents({
         did,
-        modelName: postModel.name,
+        modelId: postModel.modelId,
       });
 
       let postData = [];
 
       for (const key of Object.keys(response)) {
         const item = response[key];
-        let content = null;
-        console.log(item);
-        if (typeof item.content === "string") {
-          content = item;
-        } else {
-          content = item.content;
-        }
+        let content = item.fileContent.content;
         content.randomUUID = key;
         postData.push(content);
       }
@@ -125,7 +120,8 @@ function PostEditor() {
     setPublishLoading(true);
 
     if (randomUUID) {
-      if (!contentRecord[randomUUID].indexFileId) {
+      console.log(contentRecord,randomUUID)
+      if (!contentRecord[randomUUID].fileContent.file.fileId) {
         Message({ content: "Sorry, it's not a mirror file." });
         setPublishLoading(false);
         return;
@@ -153,7 +149,6 @@ function PostEditor() {
         randomUUID: crypto.randomUUID(),
       };
       await createPublicContent({
-        did,
         model: postModel,
         content: {
           ...postData,
@@ -191,17 +186,14 @@ function PostEditor() {
     Message({ content: "Share Link copied." });
   };
 
-  const deletePost = async () => {
-    setPublishLoading(true);
-    const file = contentRecord[selectedPost.randomUUID];
-    await deletePostContent({
-      did,
-      content: file,
-    });
-    setPublishLoading(false);
-    loadPosts();
-    setMode(Mode.View);
-  };
+  // const deletePost = async () => {
+  //   setPublishLoading(true);
+  //   const file = contentRecord[selectedPost.randomUUID];
+  //   await deletePostContent(file);
+  //   setPublishLoading(false);
+  //   loadPosts();
+  //   setMode(Mode.View);
+  // };
 
   return (
     <Spin spinning={loading}>

@@ -1,12 +1,20 @@
+import { MirrorFile } from "@dataverse/dataverse-connector";
+
 export interface Model {
-  name: string;
-  stream_id: string;
+  modelName: string;
+  internal: boolean;
+  modelId: string;
+  createdAt: number;
+  schema: string;
   isPublicDomain: boolean;
+  encryptable: Array<string>;
+  version: number;
+  latest: boolean;
 }
 
 export type EditorHandle = {
   newPost: Post;
-}
+};
 
 export interface Post {
   appVersion?: string;
@@ -24,5 +32,12 @@ export interface Post {
 
 export enum Mode {
   Edit = "Edit",
-  View = "View"
+  View = "View",
+}
+
+export interface ContentObject {
+  appId: string;
+  fileContent: { content: any; file: MirrorFile };
+  modelId: string;
+  pkh: string;
 }

@@ -16,7 +16,7 @@ export default function PostDetails() {
   const { connectIdentity } = useIdentity();
   const [did, setDid] = useState(null);
   const [loading, setLoading] = useState(false);
-  const { loadContent: loadPostContent } = useContent(app.createDapp.name);
+  const { loadContent: loadPostContent } = useContent();
   const { id } = useParams();
   const [postContent, setPostContent] = useState(null);
   const navigate = useNavigate();
@@ -63,13 +63,8 @@ export default function PostDetails() {
 
   const loadPost = async () => {
     const res = await loadPostContent(id);
-    let content = null;
 
-    if (typeof res.streamContent.content === "string") {
-      content = res.streamContent;
-    } else {
-      content = res.streamContent.content;
-    }
+    let content = res.fileContent.content;
 
     setPostContent(content);
   };

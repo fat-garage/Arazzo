@@ -5,7 +5,7 @@
     "build:scripts": "npx tsc -p tsconfig.node.json",
     "create-dataverse-app": "pnpm build:scripts && env-cmd -f .env node --experimental-specifier-resolution=node ./scripts/build/scripts/createDapp.js",
     "dev": "vite",
-    "build:src": "tsc && vite build && vite preview",
+    "build": "vite build",
     "preview": "vite preview"
   },
   "repository": {
@@ -20,7 +20,8 @@
   "homepage": "https://github.com/dataverse-os/create-dataverse-app#readme",
   "dependencies": {
     "@ant-design/icons": "^5.0.1",
-    "@dataverse/runtime-connector": "1.0.30",
+    "@dataverse/dataverse-connector": "^1.0.30",
+    "@dataverse/wallet-provider": "^1.0.13",
     "@tiptap/extension-highlight": "^2.0.3",
     "@tiptap/extension-link": "^2.0.3",
     "@tiptap/extension-placeholder": "^2.0.3",
